@@ -47,7 +47,7 @@ const Budget = {
 
     const listEl = document.getElementById('list-budget');
     if (!budgets || budgets.length === 0) {
-      listEl.innerHTML = '<p class="text-center text-gray-400 py-8">Belum ada rencana budget</p>';
+      listEl.innerHTML = '<p class="empty-state py-4">📭 Belum ada rencana budget</p>';
       this.loadCategories();
       return;
     }
@@ -65,11 +65,11 @@ const Budget = {
             <input type="checkbox" class="budget-check" ${b.is_completed ? 'checked' : ''}
               onchange="Budget.toggleCompleted('${b.id}', this.checked)">
             <div>
-              <p class="font-medium ${b.is_completed ? 'line-through text-gray-400' : ''}">${catName}</p>
-              <p class="text-xs text-gray-500">Rencana: ${Format.currency(b.amount)} | Real: ${Format.currency(realAmount)} (${pct}%)</p>
+              <p class="font-semibold ${b.is_completed ? 'line-through text-gray-400' : 'text-gray-700'}">${catName}</p>
+              <p class="text-xs text-gray-500 mt-0.5">Rencana: <span class="font-medium">${Format.currency(b.amount)}</span> | Real: <span class="font-medium">${Format.currency(realAmount)}</span> (${pct}%)</p>
             </div>
           </div>
-          <button onclick="Budget.deleteBudget('${b.id}')" class="btn-danger">Hapus</button>
+          <button onclick="Budget.deleteBudget('${b.id}')" class="btn-danger">🗑️ Hapus</button>
         </div>
       `;
     }).join('');

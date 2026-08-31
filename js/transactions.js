@@ -74,14 +74,16 @@ const Transactions = {
 
     emptyEl.classList.add('hidden');
     tbody.innerHTML = data.map(t => `
-      <tr class="border-b hover:bg-gray-50">
-        <td class="py-2">${Format.date(t.date)}</td>
-        <td class="py-2">${t.categories?.name || '-'}</td>
-        <td class="py-2 text-right font-medium">${Format.currency(t.amount)}</td>
-        <td class="py-2 text-gray-500">${t.note || '-'}</td>
-        <td class="py-2 text-center">
-          <button onclick="Transactions.showEditModal('${t.id}','${type}')" class="btn-edit mr-1">Edit</button>
-          <button onclick="Transactions.deleteTransaction('${t.id}','${type}')" class="btn-danger">Hapus</button>
+      <tr>
+        <td>${Format.date(t.date)}</td>
+        <td><span class="category-tag">${t.categories?.name || '-'}</span></td>
+        <td class="text-right"><span class="amount-text amount-positive">${Format.currency(t.amount)}</span></td>
+        <td class="text-gray-500">${t.note || '-'}</td>
+        <td>
+          <div class="action-buttons justify-center">
+            <button onclick="Transactions.showEditModal('${t.id}','${type}')" class="btn-edit">✏️ Edit</button>
+            <button onclick="Transactions.deleteTransaction('${t.id}','${type}')" class="btn-danger">🗑️ Hapus</button>
+          </div>
         </td>
       </tr>
     `).join('');

@@ -1,51 +1,272 @@
+/* Input Fields - Lebih kontras */
 .input-field {
-  @apply w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500;
+  @apply w-full px-3 py-2.5 border-2 border-gray-300 rounded-lg text-sm bg-white text-gray-800
+         placeholder-gray-400
+         focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500
+         transition duration-150;
 }
 
+/* Labels - Lebih bold */
+label {
+  @apply block text-sm font-semibold text-gray-700 mb-1.5;
+}
+
+/* Primary Button */
 .btn-primary {
-  @apply px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 transition disabled:opacity-50 disabled:cursor-not-allowed;
+  @apply px-5 py-2.5 bg-emerald-600 text-white rounded-lg text-sm font-semibold
+         hover:bg-emerald-700 active:bg-emerald-800
+         shadow-sm hover:shadow-md
+         transition duration-150
+         disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none;
 }
 
+/* Secondary Button */
 .btn-secondary {
-  @apply px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-300 transition;
+  @apply px-4 py-2.5 bg-gray-200 text-gray-700 rounded-lg text-sm font-semibold
+         hover:bg-gray-300 active:bg-gray-400
+         transition duration-150;
 }
 
+/* Danger Button */
 .btn-danger {
-  @apply px-3 py-1 bg-red-500 text-white rounded text-xs hover:bg-red-600 transition;
+  @apply px-3 py-1.5 bg-red-500 text-white rounded-md text-xs font-semibold
+         hover:bg-red-600 active:bg-red-700
+         transition duration-150;
 }
 
+/* Edit Button */
 .btn-edit {
-  @apply px-3 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600 transition;
+  @apply px-3 py-1.5 bg-blue-500 text-white rounded-md text-xs font-semibold
+         hover:bg-blue-600 active:bg-blue-700
+         transition duration-150;
 }
 
+/* Card - Container utama lebih tegas */
 .card {
-  @apply bg-white border border-gray-200 rounded-xl p-4 shadow-sm;
+  @apply bg-white border border-gray-200 rounded-xl p-5 shadow-md;
 }
 
+/* Card Form - Dengan background berbeda */
+.card-form {
+  @apply bg-white border border-gray-200 rounded-xl shadow-md overflow-hidden;
+}
+
+.card-form .card-form-inner {
+  @apply bg-gray-50 p-5 border-t border-gray-100;
+}
+
+/* Navigation Tabs - Pill style */
 .nav-tab {
-  @apply px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition;
+  @apply px-5 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap
+         transition duration-150
+         border-2 border-transparent;
 }
 
 .nav-tab.active {
-  @apply bg-emerald-600 text-white;
+  @apply bg-emerald-600 text-white border-emerald-600 shadow-md;
 }
 
 .nav-tab:not(.active) {
-  @apply text-gray-600 hover:bg-gray-100;
+  @apply text-gray-600 bg-white border-gray-200 hover:bg-gray-50 hover:border-gray-300;
 }
 
+/* Modal */
 .modal {
-  @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4;
+  @apply fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4
+         animate-fade-in;
 }
 
 .modal-content {
-  @apply bg-white rounded-xl p-6 w-full max-w-sm;
+  @apply bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl
+         animate-slide-up;
 }
 
+/* Budget Item */
 .budget-item {
-  @apply flex items-center justify-between p-3 border border-gray-200 rounded-lg;
+  @apply flex items-center justify-between p-4 bg-white border border-gray-200 rounded-xl
+         shadow-sm hover:shadow-md transition duration-150;
 }
 
+/* Budget Checkbox */
 .budget-check {
-  @apply w-5 h-5 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer;
+  @apply w-5 h-5 rounded-md border-2 border-gray-300 text-emerald-600
+         focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2
+         cursor-pointer transition duration-150;
+}
+
+/* Table Styling */
+table {
+  @apply w-full text-sm;
+}
+
+thead tr {
+  @apply bg-gray-50 border-b-2 border-gray-200;
+}
+
+thead th {
+  @apply py-3 px-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider;
+}
+
+tbody tr {
+  @apply border-b border-gray-100 hover:bg-emerald-50/50 transition duration-100;
+}
+
+tbody tr:nth-child(even) {
+  @apply bg-gray-50/50;
+}
+
+tbody td {
+  @apply py-3 px-3 text-gray-700;
+}
+
+/* Month Navigator */
+.month-nav {
+  @apply flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-2 py-1 shadow-sm;
+}
+
+.month-nav button {
+  @apply p-2 hover:bg-gray-100 rounded-lg transition duration-150 text-gray-600;
+}
+
+.month-nav span {
+  @apply font-semibold text-sm text-gray-800 min-w-[140px] text-center;
+}
+
+/* Summary Cards (Dashboard) */
+.summary-card {
+  @apply bg-white border border-gray-200 rounded-xl p-5 shadow-md
+         hover:shadow-lg transition duration-200;
+}
+
+/* Empty State */
+.empty-state {
+  @apply text-center text-gray-400 py-12 text-sm;
+}
+
+/* Form Group */
+.form-group {
+  @apply space-y-4 p-5 bg-gray-50 rounded-xl border border-gray-100;
+}
+
+/* Action Buttons Container */
+.action-buttons {
+  @apply flex items-center gap-1;
+}
+
+/* Page Title */
+.page-title {
+  @apply text-xl font-bold text-gray-800;
+}
+
+/* Section Title */
+.section-title {
+  @apply text-base font-bold text-gray-700 mb-4;
+}
+
+/* Subtitle */
+.subtitle {
+  @apply text-sm text-gray-500;
+}
+
+/* Badge */
+.badge {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold;
+}
+
+.badge-income {
+  @apply bg-emerald-100 text-emerald-700;
+}
+
+.badge-expense {
+  @apply bg-red-100 text-red-700;
+}
+
+/* Category Tag */
+.category-tag {
+  @apply inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold bg-gray-100 text-gray-700;
+}
+
+/* Amount Text */
+.amount-text {
+  @apply font-bold tabular-nums;
+}
+
+.amount-positive {
+  @apply text-emerald-600;
+}
+
+.amount-negative {
+  @apply text-red-600;
+}
+
+/* Card Header with border bottom */
+.card-header {
+  @apply pb-4 mb-4 border-b border-gray-200;
+}
+
+/* Stat Label */
+.stat-label {
+  @apply text-sm font-medium text-gray-500 mb-1;
+}
+
+/* Stat Value */
+.stat-value {
+  @apply text-2xl font-bold;
+}
+
+/* Progress Bar */
+.progress-bar {
+  @apply w-full bg-gray-200 rounded-full h-2.5 overflow-hidden;
+}
+
+.progress-fill {
+  @apply h-full rounded-full transition-all duration-500 ease-out;
+}
+
+/* Skeleton loading */
+.skeleton {
+  @apply animate-pulse bg-gray-200 rounded;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  @apply w-2 h-2;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-100 rounded-full;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 rounded-full hover:bg-gray-400;
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+/* Navbar */
+.navbar {
+  @apply bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50;
+}
+
+/* Logout Button */
+.btn-logout {
+  @apply px-3 py-1.5 text-sm font-medium text-red-500 hover:text-red-700 hover:bg-red-50
+         rounded-lg transition duration-150;
 }

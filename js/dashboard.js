@@ -61,7 +61,7 @@ const Dashboard = {
 
     const summaryEl = document.getElementById('budget-summary');
     if (!budgets || budgets.length === 0) {
-      summaryEl.innerHTML = '<p class="text-gray-400 text-sm">Belum ada data budget</p>';
+      summaryEl.innerHTML = '<p class="empty-state py-4">📭 Belum ada data budget</p>';
       return;
     }
 
@@ -82,15 +82,15 @@ const Dashboard = {
       const barColor = pct > 100 ? 'bg-red-500' : pct > 80 ? 'bg-yellow-500' : 'bg-emerald-500';
 
       return `
-        <div class="p-3 border border-gray-200 rounded-lg">
-          <div class="flex justify-between text-sm mb-1">
-            <span class="font-medium">${catName}</span>
-            <span class="text-gray-500">${Format.currency(realAmount)} / ${Format.currency(b.amount)}</span>
+        <div class="p-4 bg-gray-50 border border-gray-200 rounded-xl">
+          <div class="flex justify-between text-sm mb-2">
+            <span class="font-semibold text-gray-700">${catName}</span>
+            <span class="text-gray-500 font-medium">${Format.currency(realAmount)} / ${Format.currency(b.amount)}</span>
           </div>
-          <div class="w-full bg-gray-200 rounded-full h-2">
-            <div class="${barColor} h-2 rounded-full transition-all" style="width: ${Math.min(pct, 100)}%"></div>
+          <div class="progress-bar">
+            <div class="progress-fill ${barColor}" style="width: ${Math.min(pct, 100)}%"></div>
           </div>
-          <p class="text-xs text-gray-400 mt-1 text-right">${pct}%</p>
+          <p class="text-xs text-gray-400 mt-2 text-right font-medium">${pct}%</p>
         </div>
       `;
     }).join('');
