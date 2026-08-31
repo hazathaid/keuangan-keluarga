@@ -55,19 +55,60 @@ label {
   @apply bg-gray-50 p-5 border-t border-gray-100;
 }
 
-/* Navigation Tabs - Pill style */
+/* Navigation Tabs */
+.nav-tabs {
+  display: flex;
+  gap: 0.5rem;
+  background: white;
+  padding: 0.375rem;
+  border-radius: 1rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  border: 1px solid #e5e7eb;
+}
+
 .nav-tab {
-  @apply px-5 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap
-         transition duration-150
-         border-2 border-transparent;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  padding: 0.625rem 0.75rem;
+  border-radius: 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+  color: #6b7280;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.nav-tab:hover {
+  background: #f9fafb;
+  color: #374151;
 }
 
 .nav-tab.active {
-  @apply bg-emerald-600 text-white border-emerald-600 shadow-md;
+  background: #059669;
+  color: white;
+  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.3);
 }
 
-.nav-tab:not(.active) {
-  @apply text-gray-600 bg-white border-gray-200 hover:bg-gray-50 hover:border-gray-300;
+.nav-tab .tab-icon {
+  font-size: 1rem;
+}
+
+@media (max-width: 640px) {
+  .nav-tab {
+    padding: 0.5rem 0.5rem;
+    font-size: 0.75rem;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  .nav-tab .tab-icon {
+    font-size: 1.125rem;
+  }
 }
 
 /* Modal */
