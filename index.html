@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Keuangan Keluarga</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+  <!-- Navbar -->
+  <nav class="bg-white shadow-sm sticky top-0 z-50">
+    <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+      <h1 class="text-lg font-bold text-emerald-700">💰 Keuangan Keluarga</h1>
+      <div class="flex items-center gap-4">
+        <span id="user-email" class="text-sm text-gray-500 hidden sm:block"></span>
+        <button id="btn-logout" class="text-sm text-red-500 hover:text-red-700">Logout</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Navigation Tabs -->
+  <div class="max-w-5xl mx-auto px-4 mt-4">
+    <div class="flex gap-2 overflow-x-auto pb-2">
+      <button data-page="dashboard" class="nav-tab active">Dashboard</button>
+      <button data-page="pemasukan" class="nav-tab">Pemasukan</button>
+      <button data-page="pengeluaran" class="nav-tab">Pengeluaran</button>
+      <button data-page="budget" class="nav-tab">Rencana Budget</button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <main class="max-w-5xl mx-auto px-4 py-6">
+
+    <!-- Dashboard Page -->
+    <section id="page-dashboard" class="page">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl font-semibold">Dashboard</h2>
+        <div class="flex items-center gap-2">
+          <button id="btn-prev-month" class="p-2 hover:bg-gray-200 rounded">&larr;</button>
+          <span id="dashboard-month" class="font-medium text-sm"></span>
+          <button id="btn-next-month" class="p-2 hover:bg-gray-200 rounded">&rarr;</button>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <div class="card bg-emerald-50 border-emerald-200">
+          <p class="text-sm text-emerald-600">Pemasukan</p>
+          <p id="total-income" class="text-2xl font-bold text-emerald-700">Rp 0</p>
+        </div>
+        <div class="card bg-red-50 border-red-200">
+          <p class="text-sm text-red-600">Pengeluaran</p>
+          <p id="total-expense" class="text-2xl font-bold text-red-700">Rp 0</p>
+        </div>
+        <div class="card bg-blue-50 border-blue-200">
+          <p class="text-sm text-blue-600">Saldo</p>
+          <p id="total-balance" class="text-2xl font-bold text-blue-700">Rp 0</p>
+        </div>
+      </div>
+
+      <!-- Budget vs Realisasi -->
+      <div class="card">
+        <h3 class="font-semibold mb-4">Rencana vs Realisasi</h3>
+        <div id="budget-summary" class="space-y-3">
+          <p class="text-gray-400 text-sm">Belum ada data budget</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pemasukan Page -->
+    <section id="page-pemasukan" class="page hidden">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl font-semibold">Pemasukan</h2>
+        <div class="flex items-center gap-2">
+          <button id="btn-prev-month-income" class="p-2 hover:bg-gray-200 rounded">&larr;</button>
+          <span id="income-month" class="font-medium text-sm"></span>
+          <button id="btn-next-month-income" class="p-2 hover:bg-gray-200 rounded">&rarr;</button>
+        </div>
+      </div>
+
+      <!-- Form Tambah -->
+      <div class="card mb-6">
+        <h3 class="font-semibold mb-3">Tambah Pemasukan</h3>
+        <form id="form-income" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-sm text-gray-600 mb-1">Tanggal</label>
+            <input type="date" id="income-date" class="input-field" required>
+          </div>
+          <div>
+            <label class="block text-sm text-gray-600 mb-1">Kategori</label>
+            <div class="flex gap-2">
+              <select id="income-category" class="input-field flex-1" required>
+                <option value="">Pilih kategori</option>
+              </select>
+              <button type="button" id="btn-add-income-category" class="btn-secondary text-sm">+ Kategori</button>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm text-gray-600 mb-1">Nominal (Rp)</label>
+            <input type="number" id="income-amount" class="input-field" placeholder="0" min="1" required>
+          </div>
+          <div>
+            <label class="block text-sm text-gray-600 mb-1">Catatan</label>
+            <input type="text" id="income-note" class="input-field" placeholder="Opsional">
+          </div>
+          <div class="sm:col-span-2">
+            <button type="submit" class="btn-primary">Simpan</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Tabel -->
+      <div class="card">
+        <h3 class="font-semibold mb-3">Daftar Pemasukan</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b text-left text-gray-500">
+                <th class="py-2">Tanggal</th>
+                <th class="py-2">Kategori</th>
+                <th class="py-2 text-right">Nominal</th>
+                <th class="py-2">Catatan</th>
+                <th class="py-2 text-center">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="table-income"></tbody>
+          </table>
+          <p id="empty-income" class="text-center text-gray-400 py-8 hidden">Belum ada data pemasukan</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pengeluaran Page -->
+    <section id="page-pengeluaran" class="page hidden">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl font-semibold">Pengeluaran</h2>
+        <div class="flex items-center gap-2">
+          <button id="btn-prev-month-expense" class="p-2 hover:bg-gray-200 rounded">&larr;</button>
+          <span id="expense-month" class="font-medium text-sm"></span>
+          <button id="btn-next-month-expense" class="p-2 hover:bg-gray-200 rounded">&rarr;</button>
+        </div>
+      </div>
+
+      <!-- Form Tambah -->
+      <div class="card mb-6">
+        <h3 class="font-semibold mb-3">Tambah Pengeluaran</h3>
+        <form id="form-expense" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-sm text-gray-600 mb-1">Tanggal</label>
+            <input type="date" id="expense-date" class="input-field" required>
+          </div>
+          <div>
+            <label class="block text-sm text-gray-600 mb-1">Kategori</label>
+            <div class="flex gap-2">
+              <select id="expense-category" class="input-field flex-1" required>
+                <option value="">Pilih kategori</option>
+              </select>
+              <button type="button" id="btn-add-expense-category" class="btn-secondary text-sm">+ Kategori</button>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm text-gray-600 mb-1">Nominal (Rp)</label>
+            <input type="number" id="expense-amount" class="input-field" placeholder="0" min="1" required>
+          </div>
+          <div>
+            <label class="block text-sm text-gray-600 mb-1">Catatan</label>
+            <input type="text" id="expense-note" class="input-field" placeholder="Opsional">
+          </div>
+          <div class="sm:col-span-2">
+            <button type="submit" class="btn-primary">Simpan</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Tabel -->
+      <div class="card">
+        <h3 class="font-semibold mb-3">Daftar Pengeluaran</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b text-left text-gray-500">
+                <th class="py-2">Tanggal</th>
+                <th class="py-2">Kategori</th>
+                <th class="py-2 text-right">Nominal</th>
+                <th class="py-2">Catatan</th>
+                <th class="py-2 text-center">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="table-expense"></tbody>
+          </table>
+          <p id="empty-expense" class="text-center text-gray-400 py-8 hidden">Belum ada data pengeluaran</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Budget Page -->
+    <section id="page-budget" class="page hidden">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl font-semibold">Rencana Budget</h2>
+        <div class="flex items-center gap-2">
+          <button id="btn-prev-month-budget" class="p-2 hover:bg-gray-200 rounded">&larr;</button>
+          <span id="budget-month" class="font-medium text-sm"></span>
+          <button id="btn-next-month-budget" class="p-2 hover:bg-gray-200 rounded">&rarr;</button>
+        </div>
+      </div>
+
+      <!-- Form Tambah -->
+      <div class="card mb-6">
+        <h3 class="font-semibold mb-3">Tambah Rencana</h3>
+        <form id="form-budget" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-sm text-gray-600 mb-1">Kategori</label>
+            <div class="flex gap-2">
+              <select id="budget-category" class="input-field flex-1" required>
+                <option value="">Pilih kategori</option>
+              </select>
+              <button type="button" id="btn-add-budget-category" class="btn-secondary text-sm">+ Kategori</button>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm text-gray-600 mb-1">Nominal Rencana (Rp)</label>
+            <input type="number" id="budget-amount" class="input-field" placeholder="0" min="1" required>
+          </div>
+          <div class="sm:col-span-2">
+            <button type="submit" class="btn-primary">Simpan Rencana</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Daftar Rencana -->
+      <div class="card">
+        <h3 class="font-semibold mb-3">Daftar Rencana</h3>
+        <div id="list-budget" class="space-y-3">
+          <p class="text-center text-gray-400 py-8">Belum ada rencana budget</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Modal: Tambah Kategori -->
+  <div id="modal-category" class="modal hidden">
+    <div class="modal-content">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-semibold">Tambah Kategori</h3>
+        <button id="btn-close-modal" class="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+      </div>
+      <form id="form-category">
+        <div class="mb-3">
+          <label class="block text-sm text-gray-600 mb-1">Nama Kategori</label>
+          <input type="text" id="category-name" class="input-field" placeholder="Contoh: Gaji, Makanan" required>
+        </div>
+        <input type="hidden" id="category-type" value="income">
+        <button type="submit" class="btn-primary w-full">Simpan</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Edit Transaksi -->
+  <div id="modal-edit" class="modal hidden">
+    <div class="modal-content">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-semibold">Edit Transaksi</h3>
+        <button id="btn-close-modal-edit" class="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+      </div>
+      <form id="form-edit">
+        <input type="hidden" id="edit-id">
+        <input type="hidden" id="edit-type">
+        <div class="mb-3">
+          <label class="block text-sm text-gray-600 mb-1">Tanggal</label>
+          <input type="date" id="edit-date" class="input-field" required>
+        </div>
+        <div class="mb-3">
+          <label class="block text-sm text-gray-600 mb-1">Kategori</label>
+          <select id="edit-category" class="input-field" required></select>
+        </div>
+        <div class="mb-3">
+          <label class="block text-sm text-gray-600 mb-1">Nominal (Rp)</label>
+          <input type="number" id="edit-amount" class="input-field" min="1" required>
+        </div>
+        <div class="mb-3">
+          <label class="block text-sm text-gray-600 mb-1">Catatan</label>
+          <input type="text" id="edit-note" class="input-field">
+        </div>
+        <button type="submit" class="btn-primary w-full">Update</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="js/supabase.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/transactions.js"></script>
+  <script src="js/budget.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

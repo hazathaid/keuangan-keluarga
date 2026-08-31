@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Keuangan Keluarga</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center">
+  <div class="w-full max-w-sm mx-4">
+    <div class="text-center mb-8">
+      <h1 class="text-2xl font-bold text-emerald-700">💰 Keuangan Keluarga</h1>
+      <p class="text-gray-500 text-sm mt-1">Catat keuangan dengan mudah</p>
+    </div>
+
+    <!-- Login Form -->
+    <div id="login-view" class="card">
+      <h2 class="text-lg font-semibold mb-4">Masuk</h2>
+      <form id="form-login">
+        <div class="mb-3">
+          <label class="block text-sm text-gray-600 mb-1">Email</label>
+          <input type="email" id="login-email" class="input-field" placeholder="email@contoh.com" required>
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm text-gray-600 mb-1">Password</label>
+          <input type="password" id="login-password" class="input-field" placeholder="Minimal 6 karakter" required>
+        </div>
+        <button type="submit" class="btn-primary w-full" id="btn-login">Masuk</button>
+      </form>
+      <p class="text-center text-sm text-gray-500 mt-4">
+        Belum punya akun?
+        <button id="btn-show-register" class="text-emerald-600 hover:underline">Daftar</button>
+      </p>
+    </div>
+
+    <!-- Register Form -->
+    <div id="register-view" class="card hidden">
+      <h2 class="text-lg font-semibold mb-4">Daftar</h2>
+      <form id="form-register">
+        <div class="mb-3">
+          <label class="block text-sm text-gray-600 mb-1">Nama Lengkap</label>
+          <input type="text" id="register-name" class="input-field" placeholder="Nama Anda">
+        </div>
+        <div class="mb-3">
+          <label class="block text-sm text-gray-600 mb-1">Email</label>
+          <input type="email" id="register-email" class="input-field" placeholder="email@contoh.com" required>
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm text-gray-600 mb-1">Password</label>
+          <input type="password" id="register-password" class="input-field" placeholder="Minimal 6 karakter" required minlength="6">
+        </div>
+        <button type="submit" class="btn-primary w-full" id="btn-register">Daftar</button>
+      </form>
+      <p class="text-center text-sm text-gray-500 mt-4">
+        Sudah punya akun?
+        <button id="btn-show-login" class="text-emerald-600 hover:underline">Masuk</button>
+      </p>
+    </div>
+
+    <!-- Error Message -->
+    <div id="auth-error" class="hidden mt-4 p-3 bg-red-50 border border-red-200 rounded text-red-600 text-sm text-center"></div>
+  </div>
+
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="js/supabase.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const loginView = document.getElementById('login-view');
+      const registerView = document.getElementById('register-view');
+      const errorEl = document.getElementById('auth-error');
+
+      document.getElementById('btn-show-register').addEventListener('click', () => {
+        loginView.classList.add('hidden');
+        registerView.classList.remove('hidden');
+        errorEl.classList.add('hidden');
+      });
+
+      document.getElementById('btn-show-login').addEventListener('click', () => {
+        registerView.classList.add('hidden');
+        loginView.classList.remove('hidden');
+        errorEl.classList.add('hidden');
+      });
+
+      function showError(msg) {
+        errorEl.textContent = msg;
+        errorEl.classList.remove('hidden');
+      }
+
+      document.getElementById('form-login').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-password').value;
+        const btn = document.getElementById('btn-login');
+        btn.disabled = true;
+        btn.textContent = 'Masuk...';
+        errorEl.classList.add('hidden');
+
+        const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+        if (error) {
+          showError(error.message);
+          btn.disabled = false;
+          btn.textContent = 'Masuk';
+        } else {
+          window.location.href = 'index.html';
+        }
+      });
+
+      document.getElementById('form-register').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const name = document.getElementById('register-name').value;
+        const email = document.getElementById('register-email').value;
+        const password = document.getElementById('register-password').value;
+        const btn = document.getElementById('btn-register');
+        btn.disabled = true;
+        btn.textContent = 'Daftar...';
+        errorEl.classList.add('hidden');
+
+        const { data, error } = await supabaseClient.auth.signUp({
+          email,
+          password,
+          options: { data: { full_name: name } }
+        });
+        if (error) {
+          showError(error.message);
+          btn.disabled = false;
+          btn.textContent = 'Daftar';
+        } else {
+          showError('Akun berhasil dibuat! Cek email untuk verifikasi, lalu masuk.');
+          loginView.classList.remove('hidden');
+          registerView.classList.add('hidden');
+          btn.disabled = false;
+          btn.textContent = 'Daftar';
+        }
+      });
+
+      supabaseClient.auth.getSession().then(({ data: { session } }) => {
+        if (session) window.location.href = 'index.html';
+      });
+    });
+  </script>
+</body>
+</html>
