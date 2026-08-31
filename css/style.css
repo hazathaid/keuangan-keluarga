@@ -184,9 +184,54 @@ tbody td {
   @apply text-center text-gray-400 py-12 text-sm;
 }
 
-/* Form Group */
+/* Form Group - Clean & Simple */
 .form-group {
-  @apply space-y-4 p-5 bg-gray-50 rounded-xl border border-gray-100;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .form-row {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.form-row .form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.form-field label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #374151;
+  margin: 0;
+}
+
+.form-field .input-field {
+  margin: 0;
+}
+
+.form-field-inline {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-end;
+}
+
+.form-field-inline .input-field {
+  flex: 1;
+}
+
+.form-actions {
+  padding-top: 0.5rem;
 }
 
 /* Action Buttons Container */

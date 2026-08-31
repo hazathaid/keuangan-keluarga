@@ -20,9 +20,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    * { font-family: 'Inter', system-ui, sans-serif; }
+    * { font-family: 'Inter', system-ui, sans-serif; margin: 0; padding: 0; box-sizing: border-box; }
 
-    .login-container {
+    body {
       min-height: 100vh;
       display: flex;
       align-items: center;
@@ -53,12 +53,22 @@
       box-shadow: 0 8px 24px rgba(16, 185, 129, 0.2);
     }
 
-    .form-label {
-      display: block;
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .form-field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.375rem;
+    }
+
+    .form-field label {
       font-size: 0.8125rem;
       font-weight: 600;
       color: #374151;
-      margin-bottom: 0.5rem;
     }
 
     .form-input {
@@ -71,7 +81,6 @@
       background: white;
       transition: all 0.15s ease;
       outline: none;
-      box-sizing: border-box;
     }
 
     .form-input:focus {
@@ -79,9 +88,7 @@
       box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
     }
 
-    .form-input::placeholder {
-      color: #9ca3af;
-    }
+    .form-input::placeholder { color: #9ca3af; }
 
     .btn-submit {
       width: 100%;
@@ -103,15 +110,8 @@
       box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
     }
 
-    .btn-submit:active {
-      transform: translateY(0);
-    }
-
-    .btn-submit:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none;
-    }
+    .btn-submit:active { transform: translateY(0); }
+    .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
     .switch-text {
       text-align: center;
@@ -120,22 +120,17 @@
       border-top: 1px solid #f3f4f6;
     }
 
-    .switch-text p {
-      font-size: 0.8125rem;
-      color: #6b7280;
-    }
+    .switch-text p { font-size: 0.8125rem; color: #6b7280; }
 
     .switch-text button {
       color: #059669;
       font-weight: 600;
       cursor: pointer;
-      transition: color 0.15s;
+      background: none;
+      border: none;
     }
 
-    .switch-text button:hover {
-      color: #047857;
-      text-decoration: underline;
-    }
+    .switch-text button:hover { color: #047857; text-decoration: underline; }
 
     .error-box {
       margin-top: 1rem;
@@ -155,66 +150,76 @@
       color: #16a34a;
     }
 
-    .form-group {
+    .card-header {
+      padding-bottom: 1rem;
       margin-bottom: 1rem;
+      border-bottom: 1px solid #f3f4f6;
     }
   </style>
 </head>
 <body>
-  <div class="login-container">
-    <div class="login-card">
-      <!-- Logo -->
-      <div style="text-align: center; margin-bottom: 2rem;">
-        <div class="logo-box">
-          <span style="font-size: 2.5rem;">💰</span>
-        </div>
-        <h1 style="font-size: 1.5rem; font-weight: 700; color: #111827; margin: 0;">Keuangan Keluarga</h1>
-        <p style="font-size: 0.8125rem; color: #6b7280; margin-top: 0.375rem;">Catat keuangan dengan mudah</p>
+  <div class="login-card">
+    <!-- Logo -->
+    <div style="text-align: center; margin-bottom: 2rem;">
+      <div class="logo-box">
+        <span style="font-size: 2.5rem;">💰</span>
       </div>
+      <h1 style="font-size: 1.5rem; font-weight: 700; color: #111827;">Keuangan Keluarga</h1>
+      <p style="font-size: 0.8125rem; color: #6b7280; margin-top: 0.375rem;">Catat keuangan dengan mudah</p>
+    </div>
 
-      <!-- Login Form -->
-      <div id="login-view">
-        <form id="form-login">
-          <div class="form-group">
-            <label class="form-label" for="login-email">Email</label>
+    <!-- Login Form -->
+    <div id="login-view">
+      <div class="card-header">
+        <h2 style="font-size: 1.125rem; font-weight: 700; color: #111827;">👋 Masuk</h2>
+      </div>
+      <form id="form-login">
+        <div class="form-group">
+          <div class="form-field">
+            <label for="login-email">Email</label>
             <input type="email" id="login-email" class="form-input" placeholder="email@contoh.com" required>
           </div>
-          <div class="form-group">
-            <label class="form-label" for="login-password">Password</label>
+          <div class="form-field">
+            <label for="login-password">Password</label>
             <input type="password" id="login-password" class="form-input" placeholder="Minimal 6 karakter" required>
           </div>
           <button type="submit" class="btn-submit" id="btn-login">Masuk</button>
-        </form>
-        <div class="switch-text">
-          <p>Belum punya akun? <button id="btn-show-register">Daftar sekarang</button></p>
         </div>
+      </form>
+      <div class="switch-text">
+        <p>Belum punya akun? <button id="btn-show-register">Daftar sekarang</button></p>
       </div>
+    </div>
 
-      <!-- Register Form -->
-      <div id="register-view" style="display: none;">
-        <form id="form-register">
-          <div class="form-group">
-            <label class="form-label" for="register-name">Nama Lengkap</label>
+    <!-- Register Form -->
+    <div id="register-view" style="display: none;">
+      <div class="card-header">
+        <h2 style="font-size: 1.125rem; font-weight: 700; color: #111827;">📝 Daftar</h2>
+      </div>
+      <form id="form-register">
+        <div class="form-group">
+          <div class="form-field">
+            <label for="register-name">Nama Lengkap</label>
             <input type="text" id="register-name" class="form-input" placeholder="Nama Anda">
           </div>
-          <div class="form-group">
-            <label class="form-label" for="register-email">Email</label>
+          <div class="form-field">
+            <label for="register-email">Email</label>
             <input type="email" id="register-email" class="form-input" placeholder="email@contoh.com" required>
           </div>
-          <div class="form-group">
-            <label class="form-label" for="register-password">Password</label>
+          <div class="form-field">
+            <label for="register-password">Password</label>
             <input type="password" id="register-password" class="form-input" placeholder="Minimal 6 karakter" required minlength="6">
           </div>
           <button type="submit" class="btn-submit" id="btn-register">Daftar</button>
-        </form>
-        <div class="switch-text">
-          <p>Sudah punya akun? <button id="btn-show-login">Masuk</button></p>
         </div>
+      </form>
+      <div class="switch-text">
+        <p>Sudah punya akun? <button id="btn-show-login">Masuk</button></p>
       </div>
-
-      <!-- Error Message -->
-      <div id="auth-error" class="error-box" style="display: none;"></div>
     </div>
+
+    <!-- Error Message -->
+    <div id="auth-error" class="error-box" style="display: none;"></div>
   </div>
 
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
@@ -225,12 +230,10 @@
       const registerView = document.getElementById('register-view');
       const errorEl = document.getElementById('auth-error');
 
-      // Cek session sudah ada
       supabaseClient.auth.getSession().then(({ data: { session } }) => {
         if (session) window.location.href = 'index.html';
       });
 
-      // Toggle login/register
       document.getElementById('btn-show-register').addEventListener('click', () => {
         loginView.style.display = 'none';
         registerView.style.display = 'block';
@@ -249,7 +252,6 @@
         errorEl.className = 'error-box' + (isError ? '' : ' success');
       }
 
-      // Login
       document.getElementById('form-login').addEventListener('submit', async (e) => {
         e.preventDefault();
         const email = document.getElementById('login-email').value;
@@ -269,7 +271,6 @@
         }
       });
 
-      // Register
       document.getElementById('form-register').addEventListener('submit', async (e) => {
         e.preventDefault();
         const name = document.getElementById('register-name').value;
@@ -280,7 +281,6 @@
         btn.textContent = 'Mendaftar...';
         errorEl.style.display = 'none';
 
-        // Sign up without trigger - just create auth user
         const { data, error } = await supabaseClient.auth.signUp({
           email,
           password,
@@ -294,7 +294,6 @@
           return;
         }
 
-        // Insert profile manually
         if (data.user) {
           await supabaseClient.from('profiles').insert({
             id: data.user.id,

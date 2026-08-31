@@ -131,32 +131,34 @@
         <div class="card-header">
           <h3 class="section-title mb-0">➕ Tambah Pemasukan</h3>
         </div>
-        <form id="form-income" class="form-group">
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label for="income-date">Tanggal</label>
-              <input type="date" id="income-date" class="input-field" required>
-            </div>
-            <div>
-              <label for="income-category">Kategori</label>
-              <div class="flex gap-2">
-                <select id="income-category" class="input-field flex-1" required>
-                  <option value="">Pilih kategori</option>
-                </select>
-                <button type="button" id="btn-add-income-category" class="btn-secondary whitespace-nowrap">+ Baru</button>
+        <form id="form-income">
+          <div class="form-group">
+            <div class="form-row">
+              <div class="form-field">
+                <label for="income-date">Tanggal</label>
+                <input type="date" id="income-date" class="input-field" required>
+              </div>
+              <div class="form-field">
+                <label for="income-category">Kategori</label>
+                <div class="form-field-inline">
+                  <select id="income-category" class="input-field" required>
+                    <option value="">Pilih kategori</option>
+                  </select>
+                  <button type="button" id="btn-add-income-category" class="btn-secondary">+ Baru</button>
+                </div>
+              </div>
+              <div class="form-field">
+                <label for="income-amount">Nominal (Rp)</label>
+                <input type="number" id="income-amount" class="input-field" placeholder="0" min="1" required>
+              </div>
+              <div class="form-field">
+                <label for="income-note">Catatan</label>
+                <input type="text" id="income-note" class="input-field" placeholder="Opsional">
               </div>
             </div>
-            <div>
-              <label for="income-amount">Nominal (Rp)</label>
-              <input type="number" id="income-amount" class="input-field" placeholder="0" min="1" required>
+            <div class="form-actions">
+              <button type="submit" class="btn-primary">💾 Simpan</button>
             </div>
-            <div>
-              <label for="income-note">Catatan</label>
-              <input type="text" id="income-note" class="input-field" placeholder="Opsional">
-            </div>
-          </div>
-          <div class="pt-2">
-            <button type="submit" class="btn-primary w-full sm:w-auto">💾 Simpan</button>
           </div>
         </form>
       </div>
@@ -200,32 +202,34 @@
         <div class="card-header">
           <h3 class="section-title mb-0">➕ Tambah Pengeluaran</h3>
         </div>
-        <form id="form-expense" class="form-group">
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label for="expense-date">Tanggal</label>
-              <input type="date" id="expense-date" class="input-field" required>
-            </div>
-            <div>
-              <label for="expense-category">Kategori</label>
-              <div class="flex gap-2">
-                <select id="expense-category" class="input-field flex-1" required>
-                  <option value="">Pilih kategori</option>
-                </select>
-                <button type="button" id="btn-add-expense-category" class="btn-secondary whitespace-nowrap">+ Baru</button>
+        <form id="form-expense">
+          <div class="form-group">
+            <div class="form-row">
+              <div class="form-field">
+                <label for="expense-date">Tanggal</label>
+                <input type="date" id="expense-date" class="input-field" required>
+              </div>
+              <div class="form-field">
+                <label for="expense-category">Kategori</label>
+                <div class="form-field-inline">
+                  <select id="expense-category" class="input-field" required>
+                    <option value="">Pilih kategori</option>
+                  </select>
+                  <button type="button" id="btn-add-expense-category" class="btn-secondary">+ Baru</button>
+                </div>
+              </div>
+              <div class="form-field">
+                <label for="expense-amount">Nominal (Rp)</label>
+                <input type="number" id="expense-amount" class="input-field" placeholder="0" min="1" required>
+              </div>
+              <div class="form-field">
+                <label for="expense-note">Catatan</label>
+                <input type="text" id="expense-note" class="input-field" placeholder="Opsional">
               </div>
             </div>
-            <div>
-              <label for="expense-amount">Nominal (Rp)</label>
-              <input type="number" id="expense-amount" class="input-field" placeholder="0" min="1" required>
+            <div class="form-actions">
+              <button type="submit" class="btn-primary">💾 Simpan</button>
             </div>
-            <div>
-              <label for="expense-note">Catatan</label>
-              <input type="text" id="expense-note" class="input-field" placeholder="Opsional">
-            </div>
-          </div>
-          <div class="pt-2">
-            <button type="submit" class="btn-primary w-full sm:w-auto">💾 Simpan</button>
           </div>
         </form>
       </div>
@@ -269,24 +273,26 @@
         <div class="card-header">
           <h3 class="section-title mb-0">➕ Tambah Rencana</h3>
         </div>
-        <form id="form-budget" class="form-group">
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label for="budget-category">Kategori</label>
-              <div class="flex gap-2">
-                <select id="budget-category" class="input-field flex-1" required>
-                  <option value="">Pilih kategori</option>
-                </select>
-                <button type="button" id="btn-add-budget-category" class="btn-secondary whitespace-nowrap">+ Baru</button>
+        <form id="form-budget">
+          <div class="form-group">
+            <div class="form-row">
+              <div class="form-field">
+                <label for="budget-category">Kategori</label>
+                <div class="form-field-inline">
+                  <select id="budget-category" class="input-field" required>
+                    <option value="">Pilih kategori</option>
+                  </select>
+                  <button type="button" id="btn-add-budget-category" class="btn-secondary">+ Baru</button>
+                </div>
+              </div>
+              <div class="form-field">
+                <label for="budget-amount">Nominal Rencana (Rp)</label>
+                <input type="number" id="budget-amount" class="input-field" placeholder="0" min="1" required>
               </div>
             </div>
-            <div>
-              <label for="budget-amount">Nominal Rencana (Rp)</label>
-              <input type="number" id="budget-amount" class="input-field" placeholder="0" min="1" required>
+            <div class="form-actions">
+              <button type="submit" class="btn-primary">💾 Simpan Rencana</button>
             </div>
-          </div>
-          <div class="pt-2">
-            <button type="submit" class="btn-primary w-full sm:w-auto">💾 Simpan Rencana</button>
           </div>
         </form>
       </div>
@@ -311,13 +317,15 @@
         <h3 class="text-lg font-bold text-gray-800">🏷️ Tambah Kategori</h3>
         <button id="btn-close-modal" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition">&times;</button>
       </div>
-      <form id="form-category" class="space-y-4">
-        <div>
-          <label for="category-name">Nama Kategori</label>
-          <input type="text" id="category-name" class="input-field" placeholder="Contoh: Gaji, Makanan" required>
+      <form id="form-category">
+        <div class="form-group">
+          <div class="form-field">
+            <label for="category-name">Nama Kategori</label>
+            <input type="text" id="category-name" class="input-field" placeholder="Contoh: Gaji, Makanan" required>
+          </div>
+          <input type="hidden" id="category-type" value="income">
+          <button type="submit" class="btn-primary">💾 Simpan</button>
         </div>
-        <input type="hidden" id="category-type" value="income">
-        <button type="submit" class="btn-primary w-full">💾 Simpan</button>
       </form>
     </div>
   </div>
@@ -329,26 +337,28 @@
         <h3 class="text-lg font-bold text-gray-800">✏️ Edit Transaksi</h3>
         <button id="btn-close-modal-edit" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition">&times;</button>
       </div>
-      <form id="form-edit" class="space-y-4">
-        <input type="hidden" id="edit-id">
-        <input type="hidden" id="edit-type">
-        <div>
-          <label for="edit-date">Tanggal</label>
-          <input type="date" id="edit-date" class="input-field" required>
+      <form id="form-edit">
+        <div class="form-group">
+          <input type="hidden" id="edit-id">
+          <input type="hidden" id="edit-type">
+          <div class="form-field">
+            <label for="edit-date">Tanggal</label>
+            <input type="date" id="edit-date" class="input-field" required>
+          </div>
+          <div class="form-field">
+            <label for="edit-category">Kategori</label>
+            <select id="edit-category" class="input-field" required></select>
+          </div>
+          <div class="form-field">
+            <label for="edit-amount">Nominal (Rp)</label>
+            <input type="number" id="edit-amount" class="input-field" min="1" required>
+          </div>
+          <div class="form-field">
+            <label for="edit-note">Catatan</label>
+            <input type="text" id="edit-note" class="input-field">
+          </div>
+          <button type="submit" class="btn-primary">💾 Update</button>
         </div>
-        <div>
-          <label for="edit-category">Kategori</label>
-          <select id="edit-category" class="input-field" required></select>
-        </div>
-        <div>
-          <label for="edit-amount">Nominal (Rp)</label>
-          <input type="number" id="edit-amount" class="input-field" min="1" required>
-        </div>
-        <div>
-          <label for="edit-note">Catatan</label>
-          <input type="text" id="edit-note" class="input-field">
-        </div>
-        <button type="submit" class="btn-primary w-full">💾 Update</button>
       </form>
     </div>
   </div>
