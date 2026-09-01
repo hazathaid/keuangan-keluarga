@@ -30,6 +30,9 @@ const App = {
       tab.addEventListener('click', () => this.navigateTo(tab.dataset.page));
     });
 
+    Transactions.init();
+    Budget.init();
+
     const hash = window.location.hash.replace('#', '') || 'dashboard';
     this.navigateTo(hash);
 
