@@ -261,10 +261,13 @@
     <section id="page-budget" class="page hidden">
       <div class="flex items-center justify-between mb-6">
         <h2 class="page-title">📋 Rencana Budget</h2>
-        <div class="month-nav">
-          <button id="btn-prev-month-budget">&larr;</button>
-          <span id="budget-month"></span>
-          <button id="btn-next-month-budget">&rarr;</button>
+        <div class="flex items-center gap-2">
+          <button id="btn-copy-budget" class="btn-secondary">📋 Salin dari bulan lalu</button>
+          <div class="month-nav">
+            <button id="btn-prev-month-budget">&larr;</button>
+            <span id="budget-month"></span>
+            <button id="btn-next-month-budget">&rarr;</button>
+          </div>
         </div>
       </div>
 
@@ -360,6 +363,24 @@
           <button type="submit" class="btn-primary">💾 Update</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- Modal: Salin Budget -->
+  <div id="modal-copy-budget" class="modal hidden">
+    <div class="modal-content modal-copy">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h3 class="text-lg font-bold text-gray-800">📋 Salin Budget</h3>
+          <p id="copy-source-month" class="text-xs text-gray-500 mt-0.5"></p>
+        </div>
+        <button id="btn-close-modal-copy" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition">&times;</button>
+      </div>
+      <div id="copy-budget-list" class="copy-budget-list"></div>
+      <div class="flex gap-2 mt-4">
+        <button id="btn-cancel-copy" class="btn-secondary flex-1">Batal</button>
+        <button id="btn-save-copy" class="btn-primary flex-1">💾 Simpan Semua</button>
+      </div>
     </div>
   </div>
 

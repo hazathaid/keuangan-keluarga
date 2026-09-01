@@ -6,6 +6,10 @@ const Budget = {
     document.getElementById('btn-next-month-budget').addEventListener('click', () => this.changeMonth(1));
     document.getElementById('form-budget').addEventListener('submit', (e) => this.addBudget(e));
     document.getElementById('btn-add-budget-category').addEventListener('click', () => this.showCategoryModal());
+    document.getElementById('btn-copy-budget').addEventListener('click', () => this.showCopyModal());
+    document.getElementById('btn-close-modal-copy').addEventListener('click', () => this.hideCopyModal());
+    document.getElementById('btn-cancel-copy').addEventListener('click', () => this.hideCopyModal());
+    document.getElementById('btn-save-copy').addEventListener('click', () => this.saveCopyBudget());
     this.render();
   },
 
@@ -152,5 +156,94 @@ const Budget = {
     document.getElementById('category-type').value = 'expense';
     document.getElementById('category-name').value = '';
     document.getElementById('modal-category').classList.remove('hidden');
+  },
+
+  async showCopyModal() {
+    const user = await Auth.getUser();
+    if (!user) return;
+
+    const prevDate = new Date(this.currentDate);
+    prevDate.setMonth(prevDate.getMonth() - 1);
+    const prevMonth = prevDate.getMonth() + 1;
+    const prevYear = prevDate.getFullYear();
+
+    const { data: budgets } = await supabaseClient
+      .from('budget_plans')
+      .select('id, amount, category_id, categories(name)')
+      .eq('user_id', user.id)
+      .eq('month', prevMonth)
+      .eq('year', prevYear);
+
+    const sourceLabel = prevDate.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+    document.getElementById('copy-source-month').textContent = `Mengambil dari ${sourceLabel}`;
+
+    const listEl = document.getElementById('copy-budget-list');
+    if (!budgets || budgets.length === 0) {
+      listEl.innerHTML = '<p class="empty-state py-6">📭 Tidak ada budget di bulan lalu</p>';
+      document.getElementById('btn-save-copy').disabled = true;
+      document.getElementById('modal-copy-budget').classList.remove('hidden');
+      return;
+    }
+
+    document.getElementById('btn-save-copy').disabled = false;
+
+    listEl.innerHTML = budgets.map(b => `
+      <div class="copy-item" data-id="${b.id}" data-category-id="${b.category_id}">
+        <input type="checkbox" class="budget-check copy-check" checked>
+        <div class="copy-item-info">
+          <span class="copy-item-name">${b.categories?.name || 'Tanpa Kategori'}</span>
+        </div>
+        <input type="number" class="input-field copy-amount" value="${b.amount}" min="1">
+      </div>
+    `).join('');
+
+    document.getElementById('modal-copy-budget').classList.remove('hidden');
+  },
+
+  hideCopyModal() {
+    document.getElementById('modal-copy-budget').classList.add('hidden');
+  },
+
+  async saveCopyBudget() {
+    const user = await Auth.getUser();
+    if (!user) return;
+
+    const month = this.currentDate.getMonth() + 1;
+    const year = this.currentDate.getFullYear();
+
+    const items = document.querySelectorAll('.copy-item');
+    const toInsert = [];
+
+    items.forEach(item => {
+      const checked = item.querySelector('.copy-check').checked;
+      const amount = Number(item.querySelector('.copy-amount').value);
+      const categoryId = item.dataset.categoryId;
+
+      if (checked && amount > 0) {
+        toInsert.push({
+          category_id: categoryId,
+          amount,
+          month,
+          year,
+          user_id: user.id
+        });
+      }
+    });
+
+    if (toInsert.length === 0) {
+      this.hideCopyModal();
+      return;
+    }
+
+    const { error } = await supabaseClient.from('budget_plans').insert(toInsert);
+
+    if (error) {
+      alert('Gagal salin budget: ' + error.message);
+      return;
+    }
+
+    this.hideCopyModal();
+    this.render();
+    Dashboard.render();
   }
 };
