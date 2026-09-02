@@ -54,7 +54,7 @@ const Dashboard = {
 
     const { data: budgets } = await supabaseClient
       .from('budget_plans')
-      .select('amount, is_completed, categories(name)')
+      .select('amount, is_completed, category_id, categories(name)')
       .eq('user_id', user.id)
       .eq('month', month)
       .eq('year', year);
