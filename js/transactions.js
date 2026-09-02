@@ -118,13 +118,13 @@ const Transactions = {
 
     const date = document.getElementById(`${type === 'income' ? 'income' : 'expense'}-date`).value;
     const category_id = document.getElementById(`${type === 'income' ? 'income' : 'expense'}-category`).value;
-    const amount = document.getElementById(`${type === 'income' ? 'income' : 'expense'}-amount`).value;
+    const amount = Format.parseAmount(document.getElementById(`${type === 'income' ? 'income' : 'expense'}-amount`).value);
     const note = document.getElementById(`${type === 'income' ? 'income' : 'expense'}-note`).value;
 
     const { error } = await supabaseClient.from('transactions').insert({
       date,
       category_id,
-      amount: Number(amount),
+      amount,
       type,
       note: note || null,
       user_id: user.id
@@ -169,7 +169,7 @@ const Transactions = {
     document.getElementById('edit-id').value = data.id;
     document.getElementById('edit-type').value = type;
     document.getElementById('edit-date').value = data.date;
-    document.getElementById('edit-amount').value = data.amount;
+    document.getElementById('edit-amount').value = Format.formatAmount(data.amount);
     document.getElementById('edit-note').value = data.note || '';
 
     const catSelect = document.getElementById('edit-category');
@@ -201,7 +201,7 @@ const Transactions = {
     const { error } = await supabaseClient.from('transactions').update({
       date: document.getElementById('edit-date').value,
       category_id: document.getElementById('edit-category').value,
-      amount: Number(document.getElementById('edit-amount').value),
+      amount: Format.parseAmount(document.getElementById('edit-amount').value),
       note: document.getElementById('edit-note').value || null
     }).eq('id', id);
 

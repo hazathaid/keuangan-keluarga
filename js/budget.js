@@ -105,13 +105,13 @@ const Budget = {
     if (!user) return;
 
     const category_id = document.getElementById('budget-category').value;
-    const amount = document.getElementById('budget-amount').value;
+    const amount = Format.parseAmount(document.getElementById('budget-amount').value);
     const month = this.currentDate.getMonth() + 1;
     const year = this.currentDate.getFullYear();
 
     const { error } = await supabaseClient.from('budget_plans').insert({
       category_id,
-      amount: Number(amount),
+      amount,
       month,
       year,
       user_id: user.id
@@ -193,7 +193,7 @@ const Budget = {
         <div class="copy-item-info">
           <span class="copy-item-name">${b.categories?.name || 'Tanpa Kategori'}</span>
         </div>
-        <input type="number" class="input-field copy-amount" value="${b.amount}" min="1">
+        <input type="text" class="input-field amount-input copy-amount" value="${Format.formatAmount(b.amount)}" inputmode="numeric" min="1">
       </div>
     `).join('');
 
@@ -216,7 +216,7 @@ const Budget = {
 
     items.forEach(item => {
       const checked = item.querySelector('.copy-check').checked;
-      const amount = Number(item.querySelector('.copy-amount').value);
+      const amount = Format.parseAmount(item.querySelector('.copy-amount').value);
       const categoryId = item.dataset.categoryId;
 
       if (checked && amount > 0) {

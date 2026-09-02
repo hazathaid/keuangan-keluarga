@@ -17,6 +17,18 @@ const Format = {
 
   lastDayOfMonth(year, month) {
     return new Date(year, month, 0).getDate();
+  },
+
+  formatAmount(value) {
+    const digits = String(value).replace(/[^\d]/g, '');
+    if (!digits) return '';
+    return digits.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  },
+
+  parseAmount(value) {
+    const digits = String(value).replace(/[^\d]/g, '');
+    const n = Number(digits);
+    return Number.isFinite(n) ? n : 0;
   }
 };
 
@@ -32,6 +44,16 @@ const App = {
 
     document.querySelectorAll('.nav-tab').forEach(tab => {
       tab.addEventListener('click', () => this.navigateTo(tab.dataset.page));
+    });
+
+    document.addEventListener('input', (e) => {
+      if (e.target.classList && e.target.classList.contains('amount-input')) {
+        const pos = e.target.selectionStart;
+        const before = e.target.value.slice(0, pos).replace(/[^\d]/g, '');
+        e.target.value = Format.formatAmount(e.target.value);
+        const newPos = before.length + Math.floor((before.length - 1) / 3);
+        e.target.setSelectionRange(newPos, newPos);
+      }
     });
 
     Transactions.init();
