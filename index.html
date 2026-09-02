@@ -313,11 +313,11 @@
 
   </main>
 
-  <!-- Modal: Tambah Kategori -->
+  <!-- Modal: Kelola Kategori -->
   <div id="modal-category" class="modal hidden">
     <div class="modal-content">
       <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-bold text-gray-800">🏷️ Tambah Kategori</h3>
+        <h3 class="text-lg font-bold text-gray-800">🏷️ Kelola Kategori</h3>
         <button id="btn-close-modal" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition">&times;</button>
       </div>
       <form id="form-category">
@@ -327,9 +327,15 @@
             <input type="text" id="category-name" class="input-field" placeholder="Contoh: Gaji, Makanan" required>
           </div>
           <input type="hidden" id="category-type" value="income">
-          <button type="submit" class="btn-primary">💾 Simpan</button>
+          <input type="hidden" id="category-month">
+          <input type="hidden" id="category-year">
+          <button type="submit" class="btn-primary">💾 Tambah</button>
         </div>
       </form>
+      <div class="mt-5">
+        <p class="category-manage-title">Daftar kategori:</p>
+        <div id="category-list" class="category-list"></div>
+      </div>
     </div>
   </div>
 

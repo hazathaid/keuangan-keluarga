@@ -94,9 +94,13 @@ const Transactions = {
     const user = await Auth.getUser();
     if (!user) return;
 
+    const dateRef = type === 'income' ? this.incomeDate : this.expenseDate;
+    const month = dateRef.getMonth() + 1;
+    const year = dateRef.getFullYear();
+
     const { data } = await supabaseClient
       .from('categories')
-      .select('id, name')
+      .select('id, name, month, year')
       .eq('user_id', user.id)
       .eq('type', type)
       .order('name');
@@ -105,7 +109,7 @@ const Transactions = {
     const select = document.getElementById(selectId);
     const currentVal = select.value;
     select.innerHTML = '<option value="">Pilih kategori</option>';
-    (data || []).forEach(c => {
+    Format.categoriesForMonth(data, month, year).forEach(c => {
       select.innerHTML += `<option value="${c.id}">${c.name}</option>`;
     });
     if (currentVal) select.value = currentVal;
@@ -175,13 +179,17 @@ const Transactions = {
     const catSelect = document.getElementById('edit-category');
     const { data: cats } = await supabaseClient
       .from('categories')
-      .select('id, name')
+      .select('id, name, month, year')
       .eq('user_id', user.id)
       .eq('type', type)
       .order('name');
 
+    const t = new Date(data.date);
+    const tMonth = t.getMonth() + 1;
+    const tYear = t.getFullYear();
+
     catSelect.innerHTML = '<option value="">Pilih kategori</option>';
-    (cats || []).forEach(c => {
+    Format.categoriesForMonth(cats, tMonth, tYear).forEach(c => {
       catSelect.innerHTML += `<option value="${c.id}">${c.name}</option>`;
     });
     catSelect.value = data.category_id;
@@ -215,14 +223,71 @@ const Transactions = {
     Dashboard.render();
   },
 
-  showCategoryModal(type) {
+  setCategoryContext(type, dateRef) {
     document.getElementById('category-type').value = type;
+    document.getElementById('category-month').value = dateRef.getMonth() + 1;
+    document.getElementById('category-year').value = dateRef.getFullYear();
+  },
+
+  showCategoryModal(type) {
+    const dateRef = type === 'income' ? this.incomeDate : this.expenseDate;
+    this.setCategoryContext(type, dateRef);
     document.getElementById('category-name').value = '';
     document.getElementById('modal-category').classList.remove('hidden');
+    this.renderCategoryList(type);
   },
 
   hideCategoryModal() {
     document.getElementById('modal-category').classList.add('hidden');
+  },
+
+  async renderCategoryList(type) {
+    const user = await Auth.getUser();
+    if (!user) return;
+
+    const month = Number(document.getElementById('category-month').value);
+    const year = Number(document.getElementById('category-year').value);
+
+    const { data } = await supabaseClient
+      .from('categories')
+      .select('id, name, type, month, year')
+      .eq('user_id', user.id)
+      .eq('type', type)
+      .order('name');
+
+    const listEl = document.getElementById('category-list');
+    const cats = Format.categoriesForMonth(data, month, year);
+    if (!cats.length) {
+      listEl.innerHTML = '<p class="empty-state py-3">Belum ada kategori.</p>';
+      return;
+    }
+
+    listEl.innerHTML = cats.map(c => `
+      <div class="category-row">
+        <span class="category-name">${c.name}</span>
+        <button type="button" class="btn-danger-sm" onclick="Transactions.deleteCategory('${c.id}')">🗑 Hapus</button>
+      </div>
+    `).join('');
+  },
+
+  async deleteCategory(id) {
+    const type = document.getElementById('category-type').value;
+    const month = Number(document.getElementById('category-month').value);
+    const year = Number(document.getElementById('category-year').value);
+    if (!confirm(`Yakin hapus kategori ini (${month}/${year})?\nTransaksi & rencana budget bulan ini yang memakai kategori ini akan menjadi "Tanpa Kategori".`)) return;
+
+    const { error } = await supabaseClient.from('categories').delete().eq('id', id);
+    if (error) {
+      alert('Gagal hapus: ' + error.message);
+      return;
+    }
+
+    this.renderCategoryList(type);
+    this.loadCategories(type);
+    Budget.loadCategories();
+    this.render('income');
+    this.render('expense');
+    Budget.render();
   },
 
   async addCategory(e) {
@@ -232,10 +297,14 @@ const Transactions = {
 
     const name = document.getElementById('category-name').value;
     const type = document.getElementById('category-type').value;
+    const month = Number(document.getElementById('category-month').value);
+    const year = Number(document.getElementById('category-year').value);
 
     const { error } = await supabaseClient.from('categories').insert({
       name,
       type,
+      month,
+      year,
       user_id: user.id
     });
 
@@ -244,8 +313,12 @@ const Transactions = {
       return;
     }
 
-    this.hideCategoryModal();
+    document.getElementById('category-name').value = '';
+    this.renderCategoryList(type);
     this.loadCategories(type);
     Budget.loadCategories();
+    this.render('income');
+    this.render('expense');
+    Budget.render();
   }
 };

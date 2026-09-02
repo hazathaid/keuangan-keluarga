@@ -85,16 +85,19 @@ const Budget = {
     const user = await Auth.getUser();
     if (!user) return;
 
+    const month = this.currentDate.getMonth() + 1;
+    const year = this.currentDate.getFullYear();
+
     const { data } = await supabaseClient
       .from('categories')
-      .select('id, name')
+      .select('id, name, month, year')
       .eq('user_id', user.id)
       .eq('type', 'expense')
       .order('name');
 
     const select = document.getElementById('budget-category');
     select.innerHTML = '<option value="">Pilih kategori</option>';
-    (data || []).forEach(c => {
+    Format.categoriesForMonth(data, month, year).forEach(c => {
       select.innerHTML += `<option value="${c.id}">${c.name}</option>`;
     });
   },
@@ -153,9 +156,10 @@ const Budget = {
   },
 
   showCategoryModal() {
-    document.getElementById('category-type').value = 'expense';
+    Transactions.setCategoryContext('expense', this.currentDate);
     document.getElementById('category-name').value = '';
     document.getElementById('modal-category').classList.remove('hidden');
+    Transactions.renderCategoryList('expense');
   },
 
   async showCopyModal() {
@@ -188,7 +192,7 @@ const Budget = {
     document.getElementById('btn-save-copy').disabled = false;
 
     listEl.innerHTML = budgets.map(b => `
-      <div class="copy-item" data-id="${b.id}" data-category-id="${b.category_id}">
+      <div class="copy-item" data-id="${b.id}" data-category-id="${b.category_id}" data-category-name="${b.categories?.name || ''}">
         <input type="checkbox" class="budget-check copy-check" checked>
         <div class="copy-item-info">
           <span class="copy-item-name">${b.categories?.name || 'Tanpa Kategori'}</span>
@@ -211,24 +215,43 @@ const Budget = {
     const month = this.currentDate.getMonth() + 1;
     const year = this.currentDate.getFullYear();
 
+    const { data: thisMonthCats } = await supabaseClient
+      .from('categories')
+      .select('id, name, month, year')
+      .eq('user_id', user.id)
+      .eq('type', 'expense');
+
+    const catMap = {};
+    Format.categoriesForMonth(thisMonthCats, month, year).forEach(c => {
+      if (!catMap[c.name]) catMap[c.name] = c.id;
+    });
+
     const items = document.querySelectorAll('.copy-item');
     const toInsert = [];
 
-    items.forEach(item => {
+    for (const item of items) {
       const checked = item.querySelector('.copy-check').checked;
       const amount = Format.parseAmount(item.querySelector('.copy-amount').value);
-      const categoryId = item.dataset.categoryId;
+      const name = item.dataset.categoryName;
+      if (!checked || amount <= 0) continue;
 
-      if (checked && amount > 0) {
-        toInsert.push({
-          category_id: categoryId,
-          amount,
-          month,
-          year,
-          user_id: user.id
-        });
+      let categoryId = catMap[name];
+      if (!categoryId) {
+        const { data: newCat, error: ce } = await supabaseClient
+          .from('categories')
+          .insert({ name, type: 'expense', month, year, user_id: user.id })
+          .select('id')
+          .single();
+        if (ce) {
+          alert('Gagal buat kategori: ' + ce.message);
+          return;
+        }
+        categoryId = newCat.id;
+        catMap[name] = categoryId;
       }
-    });
+
+      toInsert.push({ category_id: categoryId, amount, month, year, user_id: user.id });
+    }
 
     if (toInsert.length === 0) {
       this.hideCopyModal();

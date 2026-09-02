@@ -29,6 +29,12 @@ const Format = {
     const digits = String(value).replace(/[^\d]/g, '');
     const n = Number(digits);
     return Number.isFinite(n) ? n : 0;
+  },
+
+  categoriesForMonth(cats, month, year) {
+    return (cats || []).filter(c =>
+      c.month == null || (Number(c.month) === Number(month) && Number(c.year) === Number(year))
+    );
   }
 };
 
