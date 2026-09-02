@@ -26,7 +26,7 @@ const Dashboard = {
     document.getElementById('dashboard-month').textContent = this.getMonthLabel();
 
     const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
-    const endDate = `${year}-${String(month).padStart(2, '0')}-31`;
+    const endDate = `${year}-${String(month).padStart(2, '0')}-${String(Format.lastDayOfMonth(year, month)).padStart(2, '0')}`;
 
     const { data: incomes } = await supabaseClient
       .from('transactions')

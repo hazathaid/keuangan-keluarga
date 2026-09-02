@@ -13,6 +13,10 @@ const Format = {
       month: 'short',
       year: 'numeric'
     });
+  },
+
+  lastDayOfMonth(year, month) {
+    return new Date(year, month, 0).getDate();
   }
 };
 

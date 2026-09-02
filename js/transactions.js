@@ -52,7 +52,7 @@ const Transactions = {
     document.getElementById(labelId).textContent = this.getMonthLabel(type);
 
     const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
-    const endDate = `${year}-${String(month).padStart(2, '0')}-31`;
+    const endDate = `${year}-${String(month).padStart(2, '0')}-${String(Format.lastDayOfMonth(year, month)).padStart(2, '0')}`;
 
     const { data } = await supabaseClient
       .from('transactions')
@@ -69,24 +69,23 @@ const Transactions = {
     if (!data || data.length === 0) {
       tbody.innerHTML = '';
       emptyEl.classList.remove('hidden');
-      return;
+    } else {
+      emptyEl.classList.add('hidden');
+      tbody.innerHTML = data.map(t => `
+        <tr>
+          <td>${Format.date(t.date)}</td>
+          <td><span class="category-tag">${t.categories?.name || '-'}</span></td>
+          <td class="text-right"><span class="amount-text amount-positive">${Format.currency(t.amount)}</span></td>
+          <td class="text-gray-500">${t.note || '-'}</td>
+          <td>
+            <div class="action-buttons justify-center">
+              <button onclick="Transactions.showEditModal('${t.id}','${type}')" class="btn-edit">✏️ Edit</button>
+              <button onclick="Transactions.deleteTransaction('${t.id}','${type}')" class="btn-danger">🗑️ Hapus</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
     }
-
-    emptyEl.classList.add('hidden');
-    tbody.innerHTML = data.map(t => `
-      <tr>
-        <td>${Format.date(t.date)}</td>
-        <td><span class="category-tag">${t.categories?.name || '-'}</span></td>
-        <td class="text-right"><span class="amount-text amount-positive">${Format.currency(t.amount)}</span></td>
-        <td class="text-gray-500">${t.note || '-'}</td>
-        <td>
-          <div class="action-buttons justify-center">
-            <button onclick="Transactions.showEditModal('${t.id}','${type}')" class="btn-edit">✏️ Edit</button>
-            <button onclick="Transactions.deleteTransaction('${t.id}','${type}')" class="btn-danger">🗑️ Hapus</button>
-          </div>
-        </td>
-      </tr>
-    `).join('');
 
     this.loadCategories(type);
   },

@@ -39,7 +39,7 @@ const Budget = {
       .eq('year', year);
 
     const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
-    const endDate = `${year}-${String(month).padStart(2, '0')}-31`;
+    const endDate = `${year}-${String(month).padStart(2, '0')}-${String(Format.lastDayOfMonth(year, month)).padStart(2, '0')}`;
 
     const { data: realExpenses } = await supabaseClient
       .from('transactions')
