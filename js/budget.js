@@ -10,6 +10,8 @@ const Budget = {
     document.getElementById('btn-close-modal-copy').addEventListener('click', () => this.hideCopyModal());
     document.getElementById('btn-cancel-copy').addEventListener('click', () => this.hideCopyModal());
     document.getElementById('btn-save-copy').addEventListener('click', () => this.saveCopyBudget());
+    document.getElementById('form-edit-budget').addEventListener('submit', (e) => this.updateBudget(e));
+    document.getElementById('btn-close-modal-edit-budget').addEventListener('click', () => this.hideEditBudgetModal());
     this.render();
   },
 
@@ -73,7 +75,10 @@ const Budget = {
               <p class="text-xs text-gray-500 mt-0.5">Rencana: <span class="font-medium">${Format.currency(b.amount)}</span> | Real: <span class="font-medium">${Format.currency(realAmount)}</span> (${pct}%)</p>
             </div>
           </div>
-          <button onclick="Budget.deleteBudget('${b.id}')" class="btn-danger">🗑️ Hapus</button>
+          <div class="action-buttons">
+            <button onclick="Budget.showEditModal('${b.id}')" class="btn-edit">✏️ Edit</button>
+            <button onclick="Budget.deleteBudget('${b.id}')" class="btn-danger">🗑️ Hapus</button>
+          </div>
         </div>
       `;
     }).join('');
@@ -151,6 +156,61 @@ const Budget = {
       alert('Gagal hapus: ' + error.message);
       return;
     }
+    this.render();
+    Dashboard.render();
+  },
+
+  async showEditModal(id) {
+    const user = await Auth.getUser();
+    if (!user) return;
+
+    const { data } = await supabaseClient
+      .from('budget_plans')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (!data) return;
+
+    document.getElementById('edit-budget-id').value = data.id;
+    document.getElementById('edit-budget-amount').value = Format.formatAmount(data.amount);
+
+    const catSelect = document.getElementById('edit-budget-category');
+    const { data: cats } = await supabaseClient
+      .from('categories')
+      .select('id, name, month, year')
+      .eq('user_id', user.id)
+      .eq('type', 'expense')
+      .order('name');
+
+    catSelect.innerHTML = '<option value="">Pilih kategori</option>';
+    Format.categoriesForMonth(cats, data.month, data.year).forEach(c => {
+      catSelect.innerHTML += `<option value="${c.id}">${c.name}</option>`;
+    });
+    catSelect.value = data.category_id;
+
+    document.getElementById('modal-edit-budget').classList.remove('hidden');
+  },
+
+  hideEditBudgetModal() {
+    document.getElementById('modal-edit-budget').classList.add('hidden');
+  },
+
+  async updateBudget(e) {
+    e.preventDefault();
+    const id = document.getElementById('edit-budget-id').value;
+
+    const { error } = await supabaseClient.from('budget_plans').update({
+      category_id: document.getElementById('edit-budget-category').value,
+      amount: Format.parseAmount(document.getElementById('edit-budget-amount').value)
+    }).eq('id', id);
+
+    if (error) {
+      alert('Gagal update: ' + error.message);
+      return;
+    }
+
+    this.hideEditBudgetModal();
     this.render();
     Dashboard.render();
   },

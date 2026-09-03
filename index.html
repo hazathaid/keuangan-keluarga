@@ -372,6 +372,30 @@
     </div>
   </div>
 
+  <!-- Modal: Edit Rencana Budget -->
+  <div id="modal-edit-budget" class="modal hidden">
+    <div class="modal-content">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-bold text-gray-800">✏️ Edit Rencana Budget</h3>
+        <button id="btn-close-modal-edit-budget" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition">&times;</button>
+      </div>
+      <form id="form-edit-budget">
+        <div class="form-group">
+          <input type="hidden" id="edit-budget-id">
+          <div class="form-field">
+            <label for="edit-budget-category">Kategori</label>
+            <select id="edit-budget-category" class="input-field" required></select>
+          </div>
+          <div class="form-field">
+            <label for="edit-budget-amount">Nominal Rencana (Rp)</label>
+            <input type="text" id="edit-budget-amount" class="input-field amount-input" inputmode="numeric" required>
+          </div>
+          <button type="submit" class="btn-primary">💾 Update</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Modal: Salin Budget -->
   <div id="modal-copy-budget" class="modal hidden">
     <div class="modal-content modal-copy">
