@@ -20,6 +20,11 @@ const Transactions = {
     document.getElementById('form-edit').addEventListener('submit', (e) => this.updateTransaction(e));
     document.getElementById('btn-close-modal-edit').addEventListener('click', () => this.hideEditModal());
 
+    document.getElementById('btn-add-income-contact').addEventListener('click', () => this.showContactModal());
+    document.getElementById('btn-add-expense-contact').addEventListener('click', () => this.showContactModal());
+    document.getElementById('form-contact').addEventListener('submit', (e) => this.addContact(e));
+    document.getElementById('btn-close-modal-contact').addEventListener('click', () => this.hideContactModal());
+
     document.getElementById('income-date').valueAsDate = new Date();
     document.getElementById('expense-date').valueAsDate = new Date();
 
@@ -54,9 +59,9 @@ const Transactions = {
     const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
     const endDate = `${year}-${String(month).padStart(2, '0')}-${String(Format.lastDayOfMonth(year, month)).padStart(2, '0')}`;
 
-    const { data } = await supabaseClient
+    const { data } = await DB
       .from('transactions')
-      .select('id, amount, date, note, categories(name)')
+      .select('id, amount, date, note, contact_id, categories(name), contacts(name)')
       .eq('user_id', user.id)
       .eq('type', type)
       .gte('date', startDate)
@@ -75,6 +80,7 @@ const Transactions = {
         <tr>
           <td>${Format.date(t.date)}</td>
           <td><span class="category-tag">${t.categories?.name || '-'}</span></td>
+          <td class="text-gray-600">${t.contacts?.name || '-'}</td>
           <td class="text-right"><span class="amount-text amount-positive">${Format.currency(t.amount)}</span></td>
           <td class="text-gray-500">${t.note || '-'}</td>
           <td>
@@ -88,6 +94,7 @@ const Transactions = {
     }
 
     this.loadCategories(type);
+    this.loadContacts();
   },
 
   async loadCategories(type) {
@@ -98,7 +105,7 @@ const Transactions = {
     const month = dateRef.getMonth() + 1;
     const year = dateRef.getFullYear();
 
-    const { data } = await supabaseClient
+    const { data } = await DB
       .from('categories')
       .select('id, name, month, year')
       .eq('user_id', user.id)
@@ -115,6 +122,29 @@ const Transactions = {
     if (currentVal) select.value = currentVal;
   },
 
+  async loadContacts() {
+    const user = await Auth.getUser();
+    if (!user) return;
+
+    const { data } = await DB
+      .from('contacts')
+      .select('id, name')
+      .eq('user_id', user.id)
+      .order('name');
+
+    const opts = '<option value="">Tanpa kontak</option>' + (data || []).map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+
+    const incomeSel = document.getElementById('income-contact');
+    const incomeVal = incomeSel.value;
+    incomeSel.innerHTML = opts;
+    if (incomeVal) incomeSel.value = incomeVal;
+
+    const expenseSel = document.getElementById('expense-contact');
+    const expenseVal = expenseSel.value;
+    expenseSel.innerHTML = opts;
+    if (expenseVal) expenseSel.value = expenseVal;
+  },
+
   async addTransaction(e, type) {
     e.preventDefault();
     const user = await Auth.getUser();
@@ -124,13 +154,15 @@ const Transactions = {
     const category_id = document.getElementById(`${type === 'income' ? 'income' : 'expense'}-category`).value;
     const amount = Format.parseAmount(document.getElementById(`${type === 'income' ? 'income' : 'expense'}-amount`).value);
     const note = document.getElementById(`${type === 'income' ? 'income' : 'expense'}-note`).value;
+    const contact_id = document.getElementById(`${type === 'income' ? 'income' : 'expense'}-contact`).value;
 
-    const { error } = await supabaseClient.from('transactions').insert({
+    const { error } = await DB.from('transactions').insert({
       date,
       category_id,
       amount,
       type,
       note: note || null,
+      contact_id: contact_id || null,
       user_id: user.id
     });
 
@@ -149,7 +181,7 @@ const Transactions = {
 
   async deleteTransaction(id, type) {
     if (!confirm('Yakin hapus transaksi ini?')) return;
-    const { error } = await supabaseClient.from('transactions').delete().eq('id', id);
+    const { error } = await DB.from('transactions').delete().eq('id', id);
     if (error) {
       alert('Gagal hapus: ' + error.message);
       return;
@@ -162,7 +194,7 @@ const Transactions = {
     const user = await Auth.getUser();
     if (!user) return;
 
-    const { data } = await supabaseClient
+    const { data } = await DB
       .from('transactions')
       .select('*')
       .eq('id', id)
@@ -176,8 +208,11 @@ const Transactions = {
     document.getElementById('edit-amount').value = Format.formatAmount(data.amount);
     document.getElementById('edit-note').value = data.note || '';
 
+    const contactLabel = document.getElementById('edit-contact-label');
+    contactLabel.textContent = type === 'income' ? 'Dari (Sumber)' : 'Ke (Tujuan)';
+
     const catSelect = document.getElementById('edit-category');
-    const { data: cats } = await supabaseClient
+    const { data: cats } = await DB
       .from('categories')
       .select('id, name, month, year')
       .eq('user_id', user.id)
@@ -194,6 +229,19 @@ const Transactions = {
     });
     catSelect.value = data.category_id;
 
+    const contactSelect = document.getElementById('edit-contact');
+    const { data: contacts } = await DB
+      .from('contacts')
+      .select('id, name')
+      .eq('user_id', user.id)
+      .order('name');
+
+    contactSelect.innerHTML = '<option value="">Tanpa kontak</option>';
+    (contacts || []).forEach(c => {
+      contactSelect.innerHTML += `<option value="${c.id}">${c.name}</option>`;
+    });
+    contactSelect.value = data.contact_id || '';
+
     document.getElementById('modal-edit').classList.remove('hidden');
   },
 
@@ -206,11 +254,12 @@ const Transactions = {
     const id = document.getElementById('edit-id').value;
     const type = document.getElementById('edit-type').value;
 
-    const { error } = await supabaseClient.from('transactions').update({
+    const { error } = await DB.from('transactions').update({
       date: document.getElementById('edit-date').value,
       category_id: document.getElementById('edit-category').value,
       amount: Format.parseAmount(document.getElementById('edit-amount').value),
-      note: document.getElementById('edit-note').value || null
+      note: document.getElementById('edit-note').value || null,
+      contact_id: document.getElementById('edit-contact').value || null
     }).eq('id', id);
 
     if (error) {
@@ -248,7 +297,7 @@ const Transactions = {
     const month = Number(document.getElementById('category-month').value);
     const year = Number(document.getElementById('category-year').value);
 
-    const { data } = await supabaseClient
+    const { data } = await DB
       .from('categories')
       .select('id, name, type, month, year')
       .eq('user_id', user.id)
@@ -276,7 +325,7 @@ const Transactions = {
     const year = Number(document.getElementById('category-year').value);
     if (!confirm(`Yakin hapus kategori ini (${month}/${year})?\nTransaksi & rencana budget bulan ini yang memakai kategori ini akan menjadi "Tanpa Kategori".`)) return;
 
-    const { error } = await supabaseClient.from('categories').delete().eq('id', id);
+    const { error } = await DB.from('categories').delete().eq('id', id);
     if (error) {
       alert('Gagal hapus: ' + error.message);
       return;
@@ -300,7 +349,7 @@ const Transactions = {
     const month = Number(document.getElementById('category-month').value);
     const year = Number(document.getElementById('category-year').value);
 
-    const { error } = await supabaseClient.from('categories').insert({
+    const { error } = await DB.from('categories').insert({
       name,
       type,
       month,
@@ -320,5 +369,77 @@ const Transactions = {
     this.render('income');
     this.render('expense');
     Budget.render();
+  },
+
+  showContactModal() {
+    document.getElementById('contact-name').value = '';
+    document.getElementById('modal-contact').classList.remove('hidden');
+    this.renderContactList();
+  },
+
+  hideContactModal() {
+    document.getElementById('modal-contact').classList.add('hidden');
+  },
+
+  async renderContactList() {
+    const user = await Auth.getUser();
+    if (!user) return;
+
+    const { data } = await DB
+      .from('contacts')
+      .select('id, name')
+      .eq('user_id', user.id)
+      .order('name');
+
+    const listEl = document.getElementById('contact-list');
+    if (!data || data.length === 0) {
+      listEl.innerHTML = '<p class="empty-state py-3">Belum ada kontak.</p>';
+      return;
+    }
+
+    listEl.innerHTML = data.map(c => `
+      <div class="category-row">
+        <span class="category-name">${c.name}</span>
+        <button type="button" class="btn-danger-sm" onclick="Transactions.deleteContact('${c.id}')">🗑 Hapus</button>
+      </div>
+    `).join('');
+  },
+
+  async addContact(e) {
+    e.preventDefault();
+    const user = await Auth.getUser();
+    if (!user) return;
+
+    const name = document.getElementById('contact-name').value.trim();
+    if (!name) return;
+
+    const { error } = await DB.from('contacts').insert({
+      name,
+      user_id: user.id
+    });
+
+    if (error) {
+      alert('Gagal tambah kontak: ' + error.message);
+      return;
+    }
+
+    document.getElementById('contact-name').value = '';
+    this.renderContactList();
+    this.loadContacts();
+  },
+
+  async deleteContact(id) {
+    if (!confirm('Yakin hapus kontak ini?\nTransaksi yang memakai kontak ini akan menjadi "Tanpa Kontak".')) return;
+
+    const { error } = await DB.from('contacts').delete().eq('id', id);
+    if (error) {
+      alert('Gagal hapus: ' + error.message);
+      return;
+    }
+
+    this.renderContactList();
+    this.loadContacts();
+    this.render('income');
+    this.render('expense');
   }
 };

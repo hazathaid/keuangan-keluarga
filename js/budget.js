@@ -33,7 +33,7 @@ const Budget = {
 
     document.getElementById('budget-month').textContent = this.getMonthLabel();
 
-    const { data: budgets } = await supabaseClient
+    const { data: budgets } = await DB
       .from('budget_plans')
       .select('id, amount, is_completed, category_id, categories(name)')
       .eq('user_id', user.id)
@@ -43,7 +43,7 @@ const Budget = {
     const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
     const endDate = `${year}-${String(month).padStart(2, '0')}-${String(Format.lastDayOfMonth(year, month)).padStart(2, '0')}`;
 
-    const { data: realExpenses } = await supabaseClient
+    const { data: realExpenses } = await DB
       .from('transactions')
       .select('amount, category_id')
       .eq('user_id', user.id)
@@ -64,6 +64,10 @@ const Budget = {
         ?.filter(e => e.category_id === b.category_id)
         .reduce((sum, e) => sum + Number(e.amount), 0) || 0;
       const pct = b.amount > 0 ? Math.round((realAmount / b.amount) * 100) : 0;
+      const remaining = Number(b.amount) - realAmount;
+      const remainingText = remaining >= 0
+        ? `<span class="text-emerald-600">Sisa: ${Format.currency(remaining)}</span>`
+        : `<span class="text-red-600">Melebihi: ${Format.currency(Math.abs(remaining))}</span>`;
 
       return `
         <div class="budget-item">
@@ -72,7 +76,7 @@ const Budget = {
               onchange="Budget.toggleCompleted('${b.id}', this.checked)">
             <div>
               <p class="font-semibold ${b.is_completed ? 'line-through text-gray-400' : 'text-gray-700'}">${catName}</p>
-              <p class="text-xs text-gray-500 mt-0.5">Rencana: <span class="font-medium">${Format.currency(b.amount)}</span> | Real: <span class="font-medium">${Format.currency(realAmount)}</span> (${pct}%)</p>
+              <p class="text-xs text-gray-500 mt-0.5">Rencana: <span class="font-medium">${Format.currency(b.amount)}</span> | Terpakai: <span class="font-medium">${Format.currency(realAmount)}</span> (${pct}%) | ${remainingText}</p>
             </div>
           </div>
           <div class="action-buttons">
@@ -93,7 +97,7 @@ const Budget = {
     const month = this.currentDate.getMonth() + 1;
     const year = this.currentDate.getFullYear();
 
-    const { data } = await supabaseClient
+    const { data } = await DB
       .from('categories')
       .select('id, name, month, year')
       .eq('user_id', user.id)
@@ -117,7 +121,7 @@ const Budget = {
     const month = this.currentDate.getMonth() + 1;
     const year = this.currentDate.getFullYear();
 
-    const { error } = await supabaseClient.from('budget_plans').insert({
+    const { error } = await DB.from('budget_plans').insert({
       category_id,
       amount,
       month,
@@ -136,7 +140,7 @@ const Budget = {
   },
 
   async toggleCompleted(id, isCompleted) {
-    const { error } = await supabaseClient.from('budget_plans').update({
+    const { error } = await DB.from('budget_plans').update({
       is_completed: isCompleted
     }).eq('id', id);
 
@@ -151,7 +155,7 @@ const Budget = {
 
   async deleteBudget(id) {
     if (!confirm('Yakin hapus rencana ini?')) return;
-    const { error } = await supabaseClient.from('budget_plans').delete().eq('id', id);
+    const { error } = await DB.from('budget_plans').delete().eq('id', id);
     if (error) {
       alert('Gagal hapus: ' + error.message);
       return;
@@ -164,7 +168,7 @@ const Budget = {
     const user = await Auth.getUser();
     if (!user) return;
 
-    const { data } = await supabaseClient
+    const { data } = await DB
       .from('budget_plans')
       .select('*')
       .eq('id', id)
@@ -176,7 +180,7 @@ const Budget = {
     document.getElementById('edit-budget-amount').value = Format.formatAmount(data.amount);
 
     const catSelect = document.getElementById('edit-budget-category');
-    const { data: cats } = await supabaseClient
+    const { data: cats } = await DB
       .from('categories')
       .select('id, name, month, year')
       .eq('user_id', user.id)
@@ -200,7 +204,7 @@ const Budget = {
     e.preventDefault();
     const id = document.getElementById('edit-budget-id').value;
 
-    const { error } = await supabaseClient.from('budget_plans').update({
+    const { error } = await DB.from('budget_plans').update({
       category_id: document.getElementById('edit-budget-category').value,
       amount: Format.parseAmount(document.getElementById('edit-budget-amount').value)
     }).eq('id', id);
@@ -231,7 +235,7 @@ const Budget = {
     const prevMonth = prevDate.getMonth() + 1;
     const prevYear = prevDate.getFullYear();
 
-    const { data: budgets } = await supabaseClient
+    const { data: budgets } = await DB
       .from('budget_plans')
       .select('id, amount, category_id, categories(name)')
       .eq('user_id', user.id)
@@ -275,7 +279,7 @@ const Budget = {
     const month = this.currentDate.getMonth() + 1;
     const year = this.currentDate.getFullYear();
 
-    const { data: thisMonthCats } = await supabaseClient
+    const { data: thisMonthCats } = await DB
       .from('categories')
       .select('id, name, month, year')
       .eq('user_id', user.id)
@@ -297,7 +301,7 @@ const Budget = {
 
       let categoryId = catMap[name];
       if (!categoryId) {
-        const { data: newCat, error: ce } = await supabaseClient
+        const { data: newCat, error: ce } = await DB
           .from('categories')
           .insert({ name, type: 'expense', month, year, user_id: user.id })
           .select('id')
@@ -318,7 +322,7 @@ const Budget = {
       return;
     }
 
-    const { error } = await supabaseClient.from('budget_plans').insert(toInsert);
+    const { error } = await DB.from('budget_plans').insert(toInsert);
 
     if (error) {
       alert('Gagal salin budget: ' + error.message);

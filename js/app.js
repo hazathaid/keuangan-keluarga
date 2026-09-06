@@ -45,6 +45,8 @@ const App = {
     const user = await Auth.getUser();
     if (!user) return;
 
+    DB.init(user);
+
     document.getElementById('user-email').textContent = user.email;
     document.getElementById('btn-logout').addEventListener('click', () => Auth.signOut());
 
