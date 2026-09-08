@@ -139,12 +139,17 @@
                 <input type="date" id="income-date" class="input-field" required>
               </div>
               <div class="form-field">
-                <label for="income-category">Kategori</label>
+                <label for="income-source">Dari (Sumber)</label>
                 <div class="form-field-inline">
-                  <select id="income-category" class="input-field" required>
-                    <option value="">Pilih kategori</option>
+                  <select id="income-source" class="input-field" required>
+                    <option value="">Pilih kategori / kontak</option>
+                    <optgroup label="Kategori"></optgroup>
+                    <optgroup label="Kontak"></optgroup>
                   </select>
-                  <button type="button" id="btn-add-income-category" class="btn-secondary">+ Baru</button>
+                  <div class="add-buttons">
+                    <button type="button" id="btn-add-income-category" class="btn-secondary">＋ Kategori</button>
+                    <button type="button" id="btn-add-income-contact" class="btn-secondary">＋ Kontak</button>
+                  </div>
                 </div>
               </div>
               <div class="form-field">
@@ -154,15 +159,6 @@
               <div class="form-field">
                 <label for="income-note">Catatan</label>
                 <input type="text" id="income-note" class="input-field" placeholder="Opsional">
-              </div>
-              <div class="form-field">
-                <label for="income-contact">Dari (Sumber)</label>
-                <div class="form-field-inline">
-                  <select id="income-contact" class="input-field">
-                    <option value="">Tanpa kontak</option>
-                  </select>
-                  <button type="button" id="btn-add-income-contact" class="btn-secondary">+ Baru</button>
-                </div>
               </div>
             </div>
             <div class="form-actions">
@@ -182,8 +178,7 @@
             <thead>
               <tr>
                 <th>Tanggal</th>
-                <th>Kategori</th>
-                <th>Dari</th>
+                <th>Dari (Sumber)</th>
                 <th class="text-right">Nominal</th>
                 <th>Catatan</th>
                 <th class="text-center">Aksi</th>
@@ -220,12 +215,17 @@
                 <input type="date" id="expense-date" class="input-field" required>
               </div>
               <div class="form-field">
-                <label for="expense-category">Kategori</label>
+                <label for="expense-source">Ke (Tujuan)</label>
                 <div class="form-field-inline">
-                  <select id="expense-category" class="input-field" required>
-                    <option value="">Pilih kategori</option>
+                  <select id="expense-source" class="input-field" required>
+                    <option value="">Pilih kategori / kontak</option>
+                    <optgroup label="Kategori"></optgroup>
+                    <optgroup label="Kontak"></optgroup>
                   </select>
-                  <button type="button" id="btn-add-expense-category" class="btn-secondary">+ Baru</button>
+                  <div class="add-buttons">
+                    <button type="button" id="btn-add-expense-category" class="btn-secondary">＋ Kategori</button>
+                    <button type="button" id="btn-add-expense-contact" class="btn-secondary">＋ Kontak</button>
+                  </div>
                 </div>
               </div>
               <div class="form-field">
@@ -235,15 +235,6 @@
               <div class="form-field">
                 <label for="expense-note">Catatan</label>
                 <input type="text" id="expense-note" class="input-field" placeholder="Opsional">
-              </div>
-              <div class="form-field">
-                <label for="expense-contact">Ke (Tujuan)</label>
-                <div class="form-field-inline">
-                  <select id="expense-contact" class="input-field">
-                    <option value="">Tanpa kontak</option>
-                  </select>
-                  <button type="button" id="btn-add-expense-contact" class="btn-secondary">+ Baru</button>
-                </div>
               </div>
             </div>
             <div class="form-actions">
@@ -263,8 +254,7 @@
             <thead>
               <tr>
                 <th>Tanggal</th>
-                <th>Kategori</th>
-                <th>Ke</th>
+                <th>Ke (Tujuan)</th>
                 <th class="text-right">Nominal</th>
                 <th>Catatan</th>
                 <th class="text-center">Aksi</th>
@@ -398,8 +388,12 @@
             <input type="date" id="edit-date" class="input-field" required>
           </div>
           <div class="form-field">
-            <label for="edit-category">Kategori</label>
-            <select id="edit-category" class="input-field" required></select>
+            <label id="edit-source-label" for="edit-source">Dari (Sumber)</label>
+            <select id="edit-source" class="input-field" required>
+              <option value="">Pilih kategori / kontak</option>
+              <optgroup label="Kategori"></optgroup>
+              <optgroup label="Kontak"></optgroup>
+            </select>
           </div>
           <div class="form-field">
             <label for="edit-amount">Nominal (Rp)</label>
@@ -408,10 +402,6 @@
           <div class="form-field">
             <label for="edit-note">Catatan</label>
             <input type="text" id="edit-note" class="input-field">
-          </div>
-          <div class="form-field">
-            <label id="edit-contact-label" for="edit-contact">Kontak</label>
-            <select id="edit-contact" class="input-field"></select>
           </div>
           <button type="submit" class="btn-primary">💾 Update</button>
         </div>

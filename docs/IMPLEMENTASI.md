@@ -3,11 +3,11 @@
 ## Ikhtisar
 
 Aplikasi pencatatan keuangan keluarga berbasis web dengan fitur:
-- Pencatatan pemasukan
-- Pencatatan pengeluaran real
+- Pencatatan pemasukan & pengeluaran dengan **From/To gabungan (Kategori + Kontak)**
 - Rencana pengeluaran bulanan dengan kategori custom
 - Checklist status rencana (sudah/sbelum dilakukan)
-- Dashboard ringkasan keuangan
+- Dashboard ringkasan keuangan dengan sisa budget
+- Keamanan data (app-level, aman tanpa RLS)
 
 ## Tech Stack
 
@@ -34,6 +34,8 @@ Aplikasi pencatatan keuangan keluarga berbasis web dengan fitur:
 | id | uuid (PK) | Auto-generated |
 | name | text | Nama kategori |
 | type | text | 'income' atau 'expense' |
+| month | int | Bulan (1-12). NULL = berlaku di semua bulan |
+| year | int | Tahun. NULL = berlaku di semua bulan |
 | user_id | uuid (FK) | Reference ke profiles |
 
 ### Tabel `transactions`
@@ -43,9 +45,19 @@ Aplikasi pencatatan keuangan keluarga berbasis web dengan fitur:
 | amount | numeric | Nominal transaksi |
 | type | text | 'income' atau 'expense' |
 | category_id | uuid (FK) | Reference ke categories |
+| contact_id | uuid (FK) | Reference ke contacts. NULL = tanpa kontak (opsional) |
 | date | date | Tanggal transaksi |
 | note | text | Catatan (opsional) |
 | user_id | uuid (FK) | Reference ke profiles |
+
+### Tabel `contacts`
+| Field | Type | Keterangan |
+|-------|------|------------|
+| id | uuid (PK) | Auto-generated |
+| name | text | Nama kontak (misal: 'Pak Budi', 'Toko ABC') |
+| user_id | uuid (FK) | Reference ke profiles |
+
+Kontak bersifat **unified** — bisa dipakai sebagai pengirim (Dari) pada pemasukan maupun penerima (Ke) pada pengeluaran. Dipilih dari dropdown gabungan "Dari (Sumber)" / "Ke (Tujuan)" bersama kategori (dalam optgroup terpisah).
 
 ### Tabel `budget_plans`
 | Field | Type | Keterangan |
@@ -58,6 +70,28 @@ Aplikasi pencatatan keuangan keluarga berbasis web dengan fitur:
 | is_completed | boolean | Sudah dilakukan atau belum |
 | user_id | uuid (FK) | Reference ke profiles |
 
+## Keamanan Data (App-Level)
+
+Semua query ke database tidak memakai `supabaseClient` secara langsung, melainkan lewat wrapper **`js/db.js`**:
+
+```js
+DB.init(user); // dipanggil sekali setelah login
+
+// Contoh: query membaca otomatis di-filter user_id
+const { data } = await DB.from('transactions').select('*').eq('id', id);
+
+// Contoh: update & delete otomatis di-filter user_id (tidak bisa akses data user lain)
+await DB.from('transactions').update({ amount: 100 }).eq('id', id);
+await DB.from('transactions').delete().eq('id', id);
+```
+
+**Fitur wrapper:**
+- **Auto-inject `user_id`** — setiap query (SELECT/INSERT/UPDATE/DELETE) otomatis difilter ke user yang login. Tidak mungkin membaca/merubah data user lain.
+- **Guard on write** — `UPDATE`/`DELETE` tanpa `WHERE` akan diblokir (throw error) demi mencegah modifikasi massal tak sengaja.
+- **Konsisten untuk migrasi** — semua file menggunakan `DB.from()`; saat pindah ke MySQL tinggal ganti implementasi di dalam `db.js` (tanpa ubah satu pun file lain).
+
+Walaupun RLS (Row Level Security) dianjurkan sebagai lapisan keamanan tambahan di Supabase, aplikasi ini **tetap aman tanpa RLS** karena filter `user_id` sudah terpusat di `db.js`. Ini memudahkan migrasi ke database tanpa RLS seperti MySQL.
+
 ## Struktur File
 
 ```
@@ -68,7 +102,8 @@ keuangan_keluarga/
 │   └── style.css           # Custom CSS
 ├── js/
 │   ├── app.js              # Router & inisialisasi global
-│   ├── supabase.js         # Koneksi Supabase
+│   ├── supabase.js         # Koneksi Supabase (raw client)
+│   ├── db.js               # DB wrapper — auto-inject user_id + query builder
 │   ├── auth.js             # Autentikasi user
 │   ├── transactions.js     # CRUD pemasukan & pengeluaran
 │   ├── budget.js           # CRUD rencana + checkbox
@@ -91,14 +126,18 @@ keuangan_keluarga/
 - Pie chart perbandingan kategori
 
 ### 3. Pemasukan (`index.html#pemasukan`)
-- Form tambah pemasukan (tanggal, kategori, nominal, catatan)
-- Tabel daftar pemasukan
+- Form tambah pemasukan (tanggal, dari/sumber, nominal, catatan)
+- Dropdown gabungan **Dari (Sumber)** dengan optgroup Kategori + Kontak
+- Tombol "+ Kategori" & "+ Kontak" langsung dari form
+- Tabel daftar pemasukan dengan kolom sumber (kategori/kontak)
 - Filter berdasarkan bulan
 - Edit & hapus data
 
 ### 4. Pengeluaran (`index.html#pengeluaran`)
-- Form tambah pengeluaran (tanggal, kategori, nominal, catatan)
-- Tabel daftar pengeluaran
+- Form tambah pengeluaran (tanggal, ke/tujuan, nominal, catatan)
+- Dropdown gabungan **Ke (Tujuan)** dengan optgroup Kategori + Kontak
+- Tombol "+ Kategori" & "+ Kontak" langsung dari form
+- Tabel daftar pengeluaran dengan kolom tujuan (kategori/kontak)
 - Filter berdasarkan bulan
 - Edit & hapus data
 
@@ -106,7 +145,8 @@ keuangan_keluarga/
 - Pilih bulan/tahun
 - Form tambah rencana: kategori + nominal
 - Daftar rencana dengan checkbox
-- Perbandingan rencana vs realisasi
+- Perbandingan rencana vs realisasi + **sisa budget** per kategori
+- Salin rencana dari bulan lalu
 
 ## Setup Supabase
 
@@ -123,7 +163,7 @@ Buka SQL Editor di dashboard Supabase, jalankan query berikut:
 -- Enable UUID extension
 create extension if not exists "uuid-ossp";
 
--- Tabel profiles (auto-create saat register)
+-- Tabel profiles
 create table profiles (
   id uuid references auth.users(id) on delete cascade primary key,
   email text unique not null,
@@ -132,10 +172,21 @@ create table profiles (
 );
 
 -- Tabel kategori custom
+-- month & year: kategori bulan-scoped. NULL berarti kategori global (semua bulan).
 create table categories (
   id uuid default uuid_generate_v4() primary key,
   name text not null,
   type text check (type in ('income', 'expense')) not null,
+  month int check (month between 1 and 12),
+  year int,
+  user_id uuid references profiles(id) on delete cascade,
+  created_at timestamp default now()
+);
+
+-- Tabel kontak (unified, opsional; bisa jadi "Dari" maupun "Ke")
+create table contacts (
+  id uuid default uuid_generate_v4() primary key,
+  name text not null,
   user_id uuid references profiles(id) on delete cascade,
   created_at timestamp default now()
 );
@@ -146,6 +197,7 @@ create table transactions (
   amount numeric not null check (amount > 0),
   type text check (type in ('income', 'expense')) not null,
   category_id uuid references categories(id) on delete set null,
+  contact_id uuid references contacts(id) on delete set null,
   date date not null default current_date,
   note text,
   user_id uuid references profiles(id) on delete cascade,
@@ -163,45 +215,6 @@ create table budget_plans (
   user_id uuid references profiles(id) on delete cascade,
   created_at timestamp default now()
 );
-
--- Enable RLS (Row Level Security)
-alter table profiles enable row level security;
-alter table categories enable row level security;
-alter table transactions enable row level security;
-alter table budget_plans enable row level security;
-
--- RLS Policies: User hanya bisa akses data sendiri
-create policy "Users can view own profile" on profiles
-  for select using (auth.uid() = id);
-
-create policy "Users can update own profile" on profiles
-  for update using (auth.uid() = id);
-
-create policy "Users can insert own profile" on profiles
-  for insert with check (auth.uid() = id);
-
-create policy "Users can manage own categories" on categories
-  for all using (auth.uid() = user_id);
-
-create policy "Users can manage own transactions" on transactions
-  for all using (auth.uid() = user_id);
-
-create policy "Users can manage own budget plans" on budget_plans
-  for all using (auth.uid() = user_id);
-
--- Trigger: Auto-create profile saat register
-create or replace function handle_new_user()
-returns trigger as $$
-begin
-  insert into profiles (id, email, full_name)
-  values (new.id, new.email, coalesce(new.raw_user_meta_data->>'full_name', ''));
-  return new;
-end;
-$$ language plpgsql security definer;
-
-create or replace trigger on_auth_user_created
-  after insert on auth.users
-  for each row execute function handle_new_user();
 ```
 
 ### 3. Ambil API Keys
@@ -255,14 +268,19 @@ Aplikasi akan bisa diakses di:
 ### Mencatat Pemasukan
 1. Buka halaman Pemasukan
 2. Klik "Tambah Pemasukan"
-3. Isi: tanggal, kategori, nominal, catatan
+3. Isi: tanggal, pilih **Dari (Sumber)** dari kategori atau kontak, nominal, catatan
 4. Klik "Simpan"
 
 ### Mencatat Pengeluaran
 1. Buka halaman Pengeluaran
 2. Klik "Tambah Pengeluaran"
-3. Isi: tanggal, kategori, nominal, catatan
+3. Isi: tanggal, pilih **Ke (Tujuan)** dari kategori atau kontak, nominal, catatan
 4. Klik "Simpan"
+
+### Kelola Kontak
+1. Di form pemasukan/pengeluaran, klik "+ Kontak"
+2. Isi nama kontak, klik "Tambah"
+3. Kontak otomatis muncul di dropdown "Kontak" pada form
 
 ### Membuat Rencana Budget
 1. Buka halaman Rencana Budget
