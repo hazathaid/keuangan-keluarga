@@ -419,12 +419,101 @@ label {
   white-space: nowrap;
 }
 
-select.filter-select {
-  width: auto;
-  min-width: 9rem;
-  max-width: 13rem;
-  padding: 0.375rem 2.25rem 0.375rem 0.75rem;
+.combo {
+  position: relative;
+}
+
+.combo-input {
+  width: 12rem;
+  max-width: 14rem;
+  padding: 0.375rem 2rem 0.375rem 0.75rem;
   font-size: 0.8125rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%236b7280' viewBox='0 0 16 16'%3E%3Cpath d='M4.646 6.646a.5.5 0 0 1 .708 0L8 9.293l2.646-2.647a.5.5 0 0 1 .708.708l-3 3a.5.5 0 0 1-.708 0l-3-3a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.625rem center;
+  cursor: pointer;
+}
+
+.combo.is-open .combo-input {
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.12);
+}
+
+.combo-clear {
+  position: absolute;
+  top: 50%;
+  right: 0.4rem;
+  transform: translateY(-50%);
+  width: 1.5rem;
+  height: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 0.375rem;
+  background: #ffffff;
+  color: #9ca3af;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.combo-clear:hover { background: #f3f4f6; color: #4b5563; }
+
+.combo-menu {
+  position: absolute;
+  top: calc(100% + 0.25rem);
+  left: 0;
+  z-index: 60;
+  min-width: 100%;
+  width: max-content;
+  max-width: min(18rem, 85vw);
+  max-height: 16rem;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0.25rem;
+  list-style: none;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.625rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+}
+
+.combo-group {
+  padding: 0.375rem 0.625rem 0.125rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #9ca3af;
+}
+
+.combo-option {
+  padding: 0.5rem 0.625rem;
+  border-radius: 0.375rem;
+  font-size: 0.8125rem;
+  color: #374151;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.combo-option:hover,
+.combo-option.is-active { background: #f3f4f6; }
+
+.combo-option.is-selected {
+  background: #ecfdf5;
+  color: #047857;
+  font-weight: 600;
+}
+
+.combo-empty {
+  padding: 0.75rem;
+  text-align: center;
+  font-size: 0.8125rem;
+  color: #9ca3af;
 }
 
 .btn-reset-filter {

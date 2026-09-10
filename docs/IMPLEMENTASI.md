@@ -107,6 +107,7 @@ keuangan_keluarga/
 │   ├── supabase.js         # Koneksi Supabase (raw client)
 │   ├── db.js               # DB wrapper — auto-inject user_id + query builder
 │   ├── auth.js             # Autentikasi user
+│   ├── combobox.js         # Dropdown filter yang bisa dicari (searchable select)
 │   ├── transactions.js     # CRUD pemasukan & pengeluaran
 │   ├── budget.js           # CRUD rencana + checkbox
 │   └── dashboard.js        # Ringkasan & visualisasi
@@ -140,7 +141,7 @@ keuangan_keluarga/
 - Dua dropdown gabungan: **Dari (Sumber)** & **Ke (Tujuan)**, masing-masing berisi optgroup Kategori + Kontak
 - Tombol "+ Kategori" & "+ Kontak" langsung dari tiap dropdown
 - Tabel daftar pengeluaran dengan kolom **Dari → Ke** (kategori/kontak)
-- **Filter daftar berdasarkan Dari & Ke** (pilih kategori/kontak, atau "Semua"), lengkap dengan tombol Reset
+- **Filter daftar berdasarkan Dari & Ke** — dropdown **bisa dicari** (ketik untuk menyaring Kategori/Kontak), pilih "Semua" atau tombol Reset untuk mengosongkan
 - Filter berdasarkan bulan
 - Edit & hapus data
 

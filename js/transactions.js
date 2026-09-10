@@ -23,8 +23,14 @@ const Transactions = {
     document.getElementById('form-edit').addEventListener('submit', (e) => this.updateTransaction(e));
     document.getElementById('btn-close-modal-edit').addEventListener('click', () => this.hideEditModal());
 
-    document.getElementById('expense-filter-from').addEventListener('change', () => this.applyExpenseFilter());
-    document.getElementById('expense-filter-to').addEventListener('change', () => this.applyExpenseFilter());
+    this.comboFrom = new SearchableSelect(
+      document.getElementById('combo-expense-filter-from'),
+      () => this.applyExpenseFilter()
+    );
+    this.comboTo = new SearchableSelect(
+      document.getElementById('combo-expense-filter-to'),
+      () => this.applyExpenseFilter()
+    );
     document.getElementById('btn-reset-expense-filter').addEventListener('click', () => this.resetExpenseFilter());
 
     document.getElementById('btn-add-income-from-contact').addEventListener('click', () => this.showContactModal());
@@ -97,8 +103,7 @@ const Transactions = {
     (contactsRes.data || []).forEach(c => { contactMap[c.id] = c.name; });
 
     if (type === 'expense') {
-      this.populateFilter('expense-filter-from', catsRes.data, contactsRes.data, this.expenseFilter.from);
-      this.populateFilter('expense-filter-to', catsRes.data, contactsRes.data, this.expenseFilter.to);
+      this.setFilterOptions(catsRes.data, contactsRes.data);
     }
 
     const rows = type === 'expense'
@@ -218,33 +223,17 @@ const Transactions = {
     return { kind: null, value: null };
   },
 
-  populateFilter(selectId, categories, contacts, chosen) {
-    const select = document.getElementById(selectId);
-    let html = '<option value="">Semua</option>';
-    html += '<optgroup label="Kategori">';
+  setFilterOptions(categories, contacts) {
+    if (!this.comboFrom || !this.comboTo) return;
+    const options = [];
     (categories || []).forEach(c => {
-      html += `<option value="${c.id}" data-kind="category">${c.name}</option>`;
+      options.push({ kind: 'category', value: c.id, name: c.name, group: 'Kategori' });
     });
-    html += '</optgroup>';
-    html += '<optgroup label="Kontak">';
     (contacts || []).forEach(c => {
-      html += `<option value="${c.id}" data-kind="contact">${c.name}</option>`;
+      options.push({ kind: 'contact', value: c.id, name: c.name, group: 'Kontak' });
     });
-    html += '</optgroup>';
-    select.innerHTML = html;
-
-    if (chosen && chosen.value) {
-      const opt = Array.from(select.options).find(o =>
-        o.value === String(chosen.value) && o.dataset.kind === chosen.kind);
-      if (opt) select.value = opt.value;
-    }
-  },
-
-  readFilter(selectId) {
-    const select = document.getElementById(selectId);
-    const opt = select.options[select.selectedIndex];
-    if (!opt || !opt.value || !opt.dataset.kind) return null;
-    return { kind: opt.dataset.kind, value: opt.value };
+    this.comboFrom.setOptions(options, this.expenseFilter.from);
+    this.comboTo.setOptions(options, this.expenseFilter.to);
   },
 
   matchExpenseFilter(t) {
@@ -262,18 +251,16 @@ const Transactions = {
   },
 
   applyExpenseFilter() {
-    this.expenseFilter.from = this.readFilter('expense-filter-from');
-    this.expenseFilter.to = this.readFilter('expense-filter-to');
+    this.expenseFilter.from = this.comboFrom.getSelected();
+    this.expenseFilter.to = this.comboTo.getSelected();
     this.render('expense');
   },
 
   resetExpenseFilter() {
     this.expenseFilter.from = null;
     this.expenseFilter.to = null;
-    const fromSel = document.getElementById('expense-filter-from');
-    const toSel = document.getElementById('expense-filter-to');
-    if (fromSel) fromSel.value = '';
-    if (toSel) toSel.value = '';
+    if (this.comboFrom) this.comboFrom.setSelected(null);
+    if (this.comboTo) this.comboTo.setSelected(null);
     this.render('expense');
   },
 
