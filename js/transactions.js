@@ -11,8 +11,10 @@ const Transactions = {
     document.getElementById('form-income').addEventListener('submit', (e) => this.addTransaction(e, 'income'));
     document.getElementById('form-expense').addEventListener('submit', (e) => this.addTransaction(e, 'expense'));
 
-    document.getElementById('btn-add-income-category').addEventListener('click', () => this.showCategoryModal('income'));
-    document.getElementById('btn-add-expense-category').addEventListener('click', () => this.showCategoryModal('expense'));
+    document.getElementById('btn-add-income-from-category').addEventListener('click', () => this.showCategoryModal('income'));
+    document.getElementById('btn-add-income-to-category').addEventListener('click', () => this.showCategoryModal('income'));
+    document.getElementById('btn-add-expense-from-category').addEventListener('click', () => this.showCategoryModal('expense'));
+    document.getElementById('btn-add-expense-to-category').addEventListener('click', () => this.showCategoryModal('expense'));
 
     document.getElementById('form-category').addEventListener('submit', (e) => this.addCategory(e));
     document.getElementById('btn-close-modal').addEventListener('click', () => this.hideCategoryModal());
@@ -20,8 +22,10 @@ const Transactions = {
     document.getElementById('form-edit').addEventListener('submit', (e) => this.updateTransaction(e));
     document.getElementById('btn-close-modal-edit').addEventListener('click', () => this.hideEditModal());
 
-    document.getElementById('btn-add-income-contact').addEventListener('click', () => this.showContactModal());
-    document.getElementById('btn-add-expense-contact').addEventListener('click', () => this.showContactModal());
+    document.getElementById('btn-add-income-from-contact').addEventListener('click', () => this.showContactModal());
+    document.getElementById('btn-add-income-to-contact').addEventListener('click', () => this.showContactModal());
+    document.getElementById('btn-add-expense-from-contact').addEventListener('click', () => this.showContactModal());
+    document.getElementById('btn-add-expense-to-contact').addEventListener('click', () => this.showContactModal());
     document.getElementById('form-contact').addEventListener('submit', (e) => this.addContact(e));
     document.getElementById('btn-close-modal-contact').addEventListener('click', () => this.hideContactModal());
 
@@ -59,14 +63,33 @@ const Transactions = {
     const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
     const endDate = `${year}-${String(month).padStart(2, '0')}-${String(Format.lastDayOfMonth(year, month)).padStart(2, '0')}`;
 
-    const { data } = await DB
-      .from('transactions')
-      .select('id, amount, date, note, contact_id, categories(name), contacts(name)')
-      .eq('user_id', user.id)
-      .eq('type', type)
-      .gte('date', startDate)
-      .lte('date', endDate)
-      .order('date', { ascending: false });
+    const [txRes, catsRes, contactsRes] = await Promise.all([
+      DB
+        .from('transactions')
+        .select('id, amount, date, note, from_category_id, from_contact_id, to_category_id, to_contact_id')
+        .eq('user_id', user.id)
+        .eq('type', type)
+        .gte('date', startDate)
+        .lte('date', endDate)
+        .order('date', { ascending: false }),
+      DB
+        .from('categories')
+        .select('id, name')
+        .eq('user_id', user.id)
+        .eq('type', type)
+        .order('name'),
+      DB
+        .from('contacts')
+        .select('id, name')
+        .eq('user_id', user.id)
+        .order('name')
+    ]);
+
+    const data = txRes.data;
+    const catMap = {};
+    (catsRes.data || []).forEach(c => { catMap[c.id] = c.name; });
+    const contactMap = {};
+    (contactsRes.data || []).forEach(c => { contactMap[c.id] = c.name; });
 
     const tbody = document.getElementById(tableId);
     const emptyEl = document.getElementById(emptyId);
@@ -76,13 +99,11 @@ const Transactions = {
       emptyEl.classList.remove('hidden');
     } else {
       emptyEl.classList.add('hidden');
-      tbody.innerHTML = data.map(t => {
-        const sourceName = t.categories?.name || t.contacts?.name || '-';
-        const sourceTag = t.categories?.name ? 'category-tag' : (t.contacts?.name ? 'category-tag category-tag-contact' : '');
-        return `
+      tbody.innerHTML = data.map(t => `
         <tr>
           <td>${Format.date(t.date)}</td>
-          <td>${sourceName === '-' ? '<span class="text-gray-400">-</span>' : `<span class="${sourceTag}">${sourceName}</span>`}</td>
+          <td>${this.renderSource(t.from_category_id, t.from_contact_id, catMap, contactMap)}</td>
+          <td>${this.renderSource(t.to_category_id, t.to_contact_id, catMap, contactMap)}</td>
           <td class="text-right"><span class="amount-text amount-positive">${Format.currency(t.amount)}</span></td>
           <td class="text-gray-500">${t.note || '-'}</td>
           <td>
@@ -92,11 +113,20 @@ const Transactions = {
             </div>
           </td>
         </tr>
-      `;
-      }).join('');
+      `).join('');
     }
 
     this.loadSource(type);
+  },
+
+  renderSource(categoryId, contactId, catMap, contactMap) {
+    if (categoryId && catMap[categoryId]) {
+      return `<span class="category-tag">${catMap[categoryId]}</span>`;
+    }
+    if (contactId && contactMap[contactId]) {
+      return `<span class="category-tag category-tag-contact">${contactMap[contactId]}</span>`;
+    }
+    return '<span class="text-gray-400">-</span>';
   },
 
   async loadSource(type) {
@@ -119,8 +149,10 @@ const Transactions = {
         .order('name')
     ]);
 
-    const selectId = type === 'income' ? 'income-source' : 'expense-source';
-    this.populateSource(selectId, Format.categoriesForMonth(catsRes.data, month, year), contactsRes.data || []);
+    const categories = Format.categoriesForMonth(catsRes.data, month, year);
+    const contacts = contactsRes.data || [];
+    this.populateSource(`${type}-from`, categories, contacts);
+    this.populateSource(`${type}-to`, categories, contacts);
   },
 
   populateSource(selectId, categories, contacts, chosenKind, chosenValue) {
@@ -157,23 +189,32 @@ const Transactions = {
     return { category_id: null, contact_id: null };
   },
 
+  sourceChoice(categoryId, contactId) {
+    if (categoryId) return { kind: 'category', value: categoryId };
+    if (contactId) return { kind: 'contact', value: contactId };
+    return { kind: null, value: null };
+  },
+
   async addTransaction(e, type) {
     e.preventDefault();
     const user = await Auth.getUser();
     if (!user) return;
 
-    const date = document.getElementById(`${type === 'income' ? 'income' : 'expense'}-date`).value;
-    const amount = Format.parseAmount(document.getElementById(`${type === 'income' ? 'income' : 'expense'}-amount`).value);
-    const note = document.getElementById(`${type === 'income' ? 'income' : 'expense'}-note`).value;
-    const source = this.resolveSource(`${type === 'income' ? 'income' : 'expense'}-source`);
+    const date = document.getElementById(`${type}-date`).value;
+    const amount = Format.parseAmount(document.getElementById(`${type}-amount`).value);
+    const note = document.getElementById(`${type}-note`).value;
+    const from = this.resolveSource(`${type}-from`);
+    const to = this.resolveSource(`${type}-to`);
 
     const { error } = await DB.from('transactions').insert({
       date,
       amount,
       type,
       note: note || null,
-      category_id: source.category_id,
-      contact_id: source.contact_id,
+      from_category_id: from.category_id,
+      from_contact_id: from.contact_id,
+      to_category_id: to.category_id,
+      to_contact_id: to.contact_id,
       user_id: user.id
     });
 
@@ -219,9 +260,6 @@ const Transactions = {
     document.getElementById('edit-amount').value = Format.formatAmount(data.amount);
     document.getElementById('edit-note').value = data.note || '';
 
-    const sourceLabel = document.getElementById('edit-source-label');
-    sourceLabel.textContent = type === 'income' ? 'Dari (Sumber)' : 'Ke (Tujuan)';
-
     const t = new Date(data.date);
     const tMonth = t.getMonth() + 1;
     const tYear = t.getFullYear();
@@ -239,12 +277,11 @@ const Transactions = {
       .eq('user_id', user.id)
       .order('name');
 
-    let chosenKind = null;
-    let chosenValue = null;
-    if (data.category_id) { chosenKind = 'category'; chosenValue = data.category_id; }
-    else if (data.contact_id) { chosenKind = 'contact'; chosenValue = data.contact_id; }
-
-    this.populateSource('edit-source', Format.categoriesForMonth(cats, tMonth, tYear), contacts || [], chosenKind, chosenValue);
+    const monthCats = Format.categoriesForMonth(cats, tMonth, tYear);
+    const fromChoice = this.sourceChoice(data.from_category_id, data.from_contact_id);
+    const toChoice = this.sourceChoice(data.to_category_id, data.to_contact_id);
+    this.populateSource('edit-from', monthCats, contacts || [], fromChoice.kind, fromChoice.value);
+    this.populateSource('edit-to', monthCats, contacts || [], toChoice.kind, toChoice.value);
 
     document.getElementById('modal-edit').classList.remove('hidden');
   },
@@ -257,14 +294,17 @@ const Transactions = {
     e.preventDefault();
     const id = document.getElementById('edit-id').value;
     const type = document.getElementById('edit-type').value;
-    const source = this.resolveSource('edit-source');
+    const from = this.resolveSource('edit-from');
+    const to = this.resolveSource('edit-to');
 
     const { error } = await DB.from('transactions').update({
       date: document.getElementById('edit-date').value,
       amount: Format.parseAmount(document.getElementById('edit-amount').value),
       note: document.getElementById('edit-note').value || null,
-      category_id: source.category_id,
-      contact_id: source.contact_id
+      from_category_id: from.category_id,
+      from_contact_id: from.contact_id,
+      to_category_id: to.category_id,
+      to_contact_id: to.contact_id
     }).eq('id', id);
 
     if (error) {

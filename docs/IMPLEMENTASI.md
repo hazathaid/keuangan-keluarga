@@ -3,7 +3,7 @@
 ## Ikhtisar
 
 Aplikasi pencatatan keuangan keluarga berbasis web dengan fitur:
-- Pencatatan pemasukan & pengeluaran dengan **From/To gabungan (Kategori + Kontak)**
+- Pencatatan pemasukan & pengeluaran dengan **From & To (masing-masing gabungan Kategori + Kontak)**
 - Rencana pengeluaran bulanan dengan kategori custom
 - Checklist status rencana (sudah/sbelum dilakukan)
 - Dashboard ringkasan keuangan dengan sisa budget
@@ -44,8 +44,10 @@ Aplikasi pencatatan keuangan keluarga berbasis web dengan fitur:
 | id | uuid (PK) | Auto-generated |
 | amount | numeric | Nominal transaksi |
 | type | text | 'income' atau 'expense' |
-| category_id | uuid (FK) | Reference ke categories |
-| contact_id | uuid (FK) | Reference ke contacts. NULL = tanpa kontak (opsional) |
+| from_category_id | uuid (FK) | Kategori sisi "Dari". NULL jika memakai kontak |
+| from_contact_id | uuid (FK) | Kontak sisi "Dari". NULL jika memakai kategori |
+| to_category_id | uuid (FK) | Kategori sisi "Ke". NULL jika memakai kontak |
+| to_contact_id | uuid (FK) | Kontak sisi "Ke". NULL jika memakai kategori |
 | date | date | Tanggal transaksi |
 | note | text | Catatan (opsional) |
 | user_id | uuid (FK) | Reference ke profiles |
@@ -57,7 +59,7 @@ Aplikasi pencatatan keuangan keluarga berbasis web dengan fitur:
 | name | text | Nama kontak (misal: 'Pak Budi', 'Toko ABC') |
 | user_id | uuid (FK) | Reference ke profiles |
 
-Kontak bersifat **unified** — bisa dipakai sebagai pengirim (Dari) pada pemasukan maupun penerima (Ke) pada pengeluaran. Dipilih dari dropdown gabungan "Dari (Sumber)" / "Ke (Tujuan)" bersama kategori (dalam optgroup terpisah).
+Kontak bersifat **unified** — bisa dipakai sebagai pengirim (Dari) maupun penerima (Ke) pada pemasukan ataupun pengeluaran. Dipilih dari dropdown gabungan bersama kategori (dalam optgroup terpisah). Setiap transaksi menyimpan **dua sisi**: `from_*` untuk "Dari (Sumber)" dan `to_*` untuk "Ke (Tujuan)".
 
 ### Tabel `budget_plans`
 | Field | Type | Keterangan |
@@ -126,18 +128,18 @@ keuangan_keluarga/
 - Pie chart perbandingan kategori
 
 ### 3. Pemasukan (`index.html#pemasukan`)
-- Form tambah pemasukan (tanggal, dari/sumber, nominal, catatan)
-- Dropdown gabungan **Dari (Sumber)** dengan optgroup Kategori + Kontak
-- Tombol "+ Kategori" & "+ Kontak" langsung dari form
-- Tabel daftar pemasukan dengan kolom sumber (kategori/kontak)
+- Form tambah pemasukan (tanggal, dari/sumber, ke/tujuan, nominal, catatan)
+- Dua dropdown gabungan: **Dari (Sumber)** & **Ke (Tujuan)**, masing-masing berisi optgroup Kategori + Kontak
+- Tombol "+ Kategori" & "+ Kontak" langsung dari tiap dropdown
+- Tabel daftar pemasukan dengan kolom Dari & Ke (kategori/kontak)
 - Filter berdasarkan bulan
 - Edit & hapus data
 
 ### 4. Pengeluaran (`index.html#pengeluaran`)
-- Form tambah pengeluaran (tanggal, ke/tujuan, nominal, catatan)
-- Dropdown gabungan **Ke (Tujuan)** dengan optgroup Kategori + Kontak
-- Tombol "+ Kategori" & "+ Kontak" langsung dari form
-- Tabel daftar pengeluaran dengan kolom tujuan (kategori/kontak)
+- Form tambah pengeluaran (tanggal, dari/sumber, ke/tujuan, nominal, catatan)
+- Dua dropdown gabungan: **Dari (Sumber)** & **Ke (Tujuan)**, masing-masing berisi optgroup Kategori + Kontak
+- Tombol "+ Kategori" & "+ Kontak" langsung dari tiap dropdown
+- Tabel daftar pengeluaran dengan kolom Dari & Ke (kategori/kontak)
 - Filter berdasarkan bulan
 - Edit & hapus data
 
@@ -192,12 +194,16 @@ create table contacts (
 );
 
 -- Tabel transaksi
+-- from_* = sisi "Dari (Sumber)", to_* = sisi "Ke (Tujuan)"
+-- masing-masing bisa berupa kategori ATAU kontak
 create table transactions (
   id uuid default uuid_generate_v4() primary key,
   amount numeric not null check (amount > 0),
   type text check (type in ('income', 'expense')) not null,
-  category_id uuid references categories(id) on delete set null,
-  contact_id uuid references contacts(id) on delete set null,
+  from_category_id uuid references categories(id) on delete set null,
+  from_contact_id uuid references contacts(id) on delete set null,
+  to_category_id uuid references categories(id) on delete set null,
+  to_contact_id uuid references contacts(id) on delete set null,
   date date not null default current_date,
   note text,
   user_id uuid references profiles(id) on delete cascade,
@@ -216,6 +222,12 @@ create table budget_plans (
   created_at timestamp default now()
 );
 ```
+
+### Migrasi dari versi lama (satu sisi → From & To)
+Jika database sudah terisi data dengan kolom lama `category_id` / `contact_id`, jalankan file **`docs/migration-from-to.sql`** di SQL Editor. Script tersebut:
+1. Menambah kolom `from_category_id`, `from_contact_id`, `to_category_id`, `to_contact_id`.
+2. Memindahkan data lama — pemasukan ke sisi `from_*`, pengeluaran ke sisi `to_*`.
+3. Menghapus kolom lama.
 
 ### 3. Ambil API Keys
 Buka **Settings > API** di dashboard Supabase:
@@ -268,13 +280,13 @@ Aplikasi akan bisa diakses di:
 ### Mencatat Pemasukan
 1. Buka halaman Pemasukan
 2. Klik "Tambah Pemasukan"
-3. Isi: tanggal, pilih **Dari (Sumber)** dari kategori atau kontak, nominal, catatan
+3. Isi: tanggal, pilih **Dari (Sumber)** dan **Ke (Tujuan)** (masing-masing kategori atau kontak), nominal, catatan
 4. Klik "Simpan"
 
 ### Mencatat Pengeluaran
 1. Buka halaman Pengeluaran
 2. Klik "Tambah Pengeluaran"
-3. Isi: tanggal, pilih **Ke (Tujuan)** dari kategori atau kontak, nominal, catatan
+3. Isi: tanggal, pilih **Dari (Sumber)** dan **Ke (Tujuan)** (masing-masing kategori atau kontak), nominal, catatan
 4. Klik "Simpan"
 
 ### Kelola Kontak

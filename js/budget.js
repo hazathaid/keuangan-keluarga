@@ -45,7 +45,7 @@ const Budget = {
 
     const { data: realExpenses } = await DB
       .from('transactions')
-      .select('amount, category_id')
+      .select('amount, to_category_id')
       .eq('user_id', user.id)
       .eq('type', 'expense')
       .gte('date', startDate)
@@ -61,7 +61,7 @@ const Budget = {
     listEl.innerHTML = budgets.map(b => {
       const catName = b.categories?.name || 'Tanpa Kategori';
       const realAmount = realExpenses
-        ?.filter(e => e.category_id === b.category_id)
+        ?.filter(e => e.to_category_id === b.category_id)
         .reduce((sum, e) => sum + Number(e.amount), 0) || 0;
       const pct = b.amount > 0 ? Math.round((realAmount / b.amount) * 100) : 0;
       const remaining = Number(b.amount) - realAmount;
