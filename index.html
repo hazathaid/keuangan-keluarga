@@ -274,8 +274,23 @@
 
       <!-- Tabel -->
       <div class="card">
-        <div class="card-header">
+        <div class="card-header flex items-center justify-between gap-3 flex-wrap">
           <h3 class="section-title mb-0">📋 Daftar Pengeluaran</h3>
+          <div class="filter-bar">
+            <div class="filter-field">
+              <span class="filter-label">Dari</span>
+              <select id="expense-filter-from" class="input-field filter-select">
+                <option value="">Semua</option>
+              </select>
+            </div>
+            <div class="filter-field">
+              <span class="filter-label">Ke</span>
+              <select id="expense-filter-to" class="input-field filter-select">
+                <option value="">Semua</option>
+              </select>
+            </div>
+            <button type="button" id="btn-reset-expense-filter" class="btn-secondary btn-reset-filter">↺ Reset</button>
+          </div>
         </div>
         <div class="overflow-x-auto">
           <table>

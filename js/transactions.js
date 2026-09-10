@@ -1,6 +1,7 @@
 const Transactions = {
   incomeDate: new Date(),
   expenseDate: new Date(),
+  expenseFilter: { from: null, to: null },
 
   init() {
     document.getElementById('btn-prev-month-income').addEventListener('click', () => this.changeMonth('income', -1));
@@ -21,6 +22,10 @@ const Transactions = {
 
     document.getElementById('form-edit').addEventListener('submit', (e) => this.updateTransaction(e));
     document.getElementById('btn-close-modal-edit').addEventListener('click', () => this.hideEditModal());
+
+    document.getElementById('expense-filter-from').addEventListener('change', () => this.applyExpenseFilter());
+    document.getElementById('expense-filter-to').addEventListener('change', () => this.applyExpenseFilter());
+    document.getElementById('btn-reset-expense-filter').addEventListener('click', () => this.resetExpenseFilter());
 
     document.getElementById('btn-add-income-from-contact').addEventListener('click', () => this.showContactModal());
     document.getElementById('btn-add-income-to-contact').addEventListener('click', () => this.showContactModal());
@@ -91,15 +96,28 @@ const Transactions = {
     const contactMap = {};
     (contactsRes.data || []).forEach(c => { contactMap[c.id] = c.name; });
 
+    if (type === 'expense') {
+      this.populateFilter('expense-filter-from', catsRes.data, contactsRes.data, this.expenseFilter.from);
+      this.populateFilter('expense-filter-to', catsRes.data, contactsRes.data, this.expenseFilter.to);
+    }
+
+    const rows = type === 'expense'
+      ? (data || []).filter(t => this.matchExpenseFilter(t))
+      : (data || []);
+
     const tbody = document.getElementById(tableId);
     const emptyEl = document.getElementById(emptyId);
+    const baseEmpty = type === 'income' ? '📭 Belum ada data pemasukan' : '📭 Belum ada data pengeluaran';
 
-    if (!data || data.length === 0) {
+    if (!rows || rows.length === 0) {
       tbody.innerHTML = '';
+      emptyEl.textContent = (data && data.length > 0)
+        ? '🔍 Tidak ada transaksi sesuai filter'
+        : baseEmpty;
       emptyEl.classList.remove('hidden');
     } else {
       emptyEl.classList.add('hidden');
-      tbody.innerHTML = data.map(t => `
+      tbody.innerHTML = rows.map(t => `
         <tr>
           <td>${Format.date(t.date)}</td>
           <td>${this.renderFlow(t, catMap, contactMap)}</td>
@@ -198,6 +216,65 @@ const Transactions = {
     if (categoryId) return { kind: 'category', value: categoryId };
     if (contactId) return { kind: 'contact', value: contactId };
     return { kind: null, value: null };
+  },
+
+  populateFilter(selectId, categories, contacts, chosen) {
+    const select = document.getElementById(selectId);
+    let html = '<option value="">Semua</option>';
+    html += '<optgroup label="Kategori">';
+    (categories || []).forEach(c => {
+      html += `<option value="${c.id}" data-kind="category">${c.name}</option>`;
+    });
+    html += '</optgroup>';
+    html += '<optgroup label="Kontak">';
+    (contacts || []).forEach(c => {
+      html += `<option value="${c.id}" data-kind="contact">${c.name}</option>`;
+    });
+    html += '</optgroup>';
+    select.innerHTML = html;
+
+    if (chosen && chosen.value) {
+      const opt = Array.from(select.options).find(o =>
+        o.value === String(chosen.value) && o.dataset.kind === chosen.kind);
+      if (opt) select.value = opt.value;
+    }
+  },
+
+  readFilter(selectId) {
+    const select = document.getElementById(selectId);
+    const opt = select.options[select.selectedIndex];
+    if (!opt || !opt.value || !opt.dataset.kind) return null;
+    return { kind: opt.dataset.kind, value: opt.value };
+  },
+
+  matchExpenseFilter(t) {
+    const from = this.expenseFilter.from;
+    if (from) {
+      const id = from.kind === 'category' ? t.from_category_id : t.from_contact_id;
+      if (id !== from.value) return false;
+    }
+    const to = this.expenseFilter.to;
+    if (to) {
+      const id = to.kind === 'category' ? t.to_category_id : t.to_contact_id;
+      if (id !== to.value) return false;
+    }
+    return true;
+  },
+
+  applyExpenseFilter() {
+    this.expenseFilter.from = this.readFilter('expense-filter-from');
+    this.expenseFilter.to = this.readFilter('expense-filter-to');
+    this.render('expense');
+  },
+
+  resetExpenseFilter() {
+    this.expenseFilter.from = null;
+    this.expenseFilter.to = null;
+    const fromSel = document.getElementById('expense-filter-from');
+    const toSel = document.getElementById('expense-filter-to');
+    if (fromSel) fromSel.value = '';
+    if (toSel) toSel.value = '';
+    this.render('expense');
   },
 
   async addTransaction(e, type) {

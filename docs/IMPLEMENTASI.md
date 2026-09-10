@@ -140,6 +140,7 @@ keuangan_keluarga/
 - Dua dropdown gabungan: **Dari (Sumber)** & **Ke (Tujuan)**, masing-masing berisi optgroup Kategori + Kontak
 - Tombol "+ Kategori" & "+ Kontak" langsung dari tiap dropdown
 - Tabel daftar pengeluaran dengan kolom **Dari → Ke** (kategori/kontak)
+- **Filter daftar berdasarkan Dari & Ke** (pilih kategori/kontak, atau "Semua"), lengkap dengan tombol Reset
 - Filter berdasarkan bulan
 - Edit & hapus data
 
