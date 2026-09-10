@@ -102,8 +102,7 @@ const Transactions = {
       tbody.innerHTML = data.map(t => `
         <tr>
           <td>${Format.date(t.date)}</td>
-          <td>${this.renderSource(t.from_category_id, t.from_contact_id, catMap, contactMap)}</td>
-          <td>${this.renderSource(t.to_category_id, t.to_contact_id, catMap, contactMap)}</td>
+          <td>${this.renderFlow(t, catMap, contactMap)}</td>
           <td class="text-right"><span class="amount-text amount-positive">${Format.currency(t.amount)}</span></td>
           <td class="text-gray-500">${t.note || '-'}</td>
           <td>
@@ -119,14 +118,20 @@ const Transactions = {
     this.loadSource(type);
   },
 
-  renderSource(categoryId, contactId, catMap, contactMap) {
+  renderFlow(t, catMap, contactMap) {
+    const from = this.sourceTag(t.from_category_id, t.from_contact_id, catMap, contactMap);
+    const to = this.sourceTag(t.to_category_id, t.to_contact_id, catMap, contactMap);
+    return `<div class="flow-cell">${from}<span class="flow-arrow">→</span>${to}</div>`;
+  },
+
+  sourceTag(categoryId, contactId, catMap, contactMap) {
     if (categoryId && catMap[categoryId]) {
       return `<span class="category-tag">${catMap[categoryId]}</span>`;
     }
     if (contactId && contactMap[contactId]) {
       return `<span class="category-tag category-tag-contact">${contactMap[contactId]}</span>`;
     }
-    return '<span class="text-gray-400">-</span>';
+    return '<span class="muted-dash">—</span>';
   },
 
   async loadSource(type) {

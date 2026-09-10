@@ -44,10 +44,10 @@ Aplikasi pencatatan keuangan keluarga berbasis web dengan fitur:
 | id | uuid (PK) | Auto-generated |
 | amount | numeric | Nominal transaksi |
 | type | text | 'income' atau 'expense' |
-| from_category_id | uuid (FK) | Kategori sisi "Dari". NULL jika memakai kontak |
-| from_contact_id | uuid (FK) | Kontak sisi "Dari". NULL jika memakai kategori |
-| to_category_id | uuid (FK) | Kategori sisi "Ke". NULL jika memakai kontak |
-| to_contact_id | uuid (FK) | Kontak sisi "Ke". NULL jika memakai kategori |
+| from_category_id | uuid (FK) | Kategori sisi "Dari" (opsional). NULL jika kosong / memakai kontak |
+| from_contact_id | uuid (FK) | Kontak sisi "Dari" (opsional). NULL jika kosong / memakai kategori |
+| to_category_id | uuid (FK) | Kategori sisi "Ke" (opsional). NULL jika kosong / memakai kontak |
+| to_contact_id | uuid (FK) | Kontak sisi "Ke" (opsional). NULL jika kosong / memakai kategori |
 | date | date | Tanggal transaksi |
 | note | text | Catatan (opsional) |
 | user_id | uuid (FK) | Reference ke profiles |
@@ -128,18 +128,18 @@ keuangan_keluarga/
 - Pie chart perbandingan kategori
 
 ### 3. Pemasukan (`index.html#pemasukan`)
-- Form tambah pemasukan (tanggal, dari/sumber, ke/tujuan, nominal, catatan)
+- Form tambah pemasukan (tanggal, nominal, dari/sumber & ke/tujuan **opsional**, catatan)
 - Dua dropdown gabungan: **Dari (Sumber)** & **Ke (Tujuan)**, masing-masing berisi optgroup Kategori + Kontak
 - Tombol "+ Kategori" & "+ Kontak" langsung dari tiap dropdown
-- Tabel daftar pemasukan dengan kolom Dari & Ke (kategori/kontak)
+- Tabel daftar pemasukan dengan kolom **Dari → Ke** (kategori/kontak)
 - Filter berdasarkan bulan
 - Edit & hapus data
 
 ### 4. Pengeluaran (`index.html#pengeluaran`)
-- Form tambah pengeluaran (tanggal, dari/sumber, ke/tujuan, nominal, catatan)
+- Form tambah pengeluaran (tanggal, nominal, dari/sumber & ke/tujuan **opsional**, catatan)
 - Dua dropdown gabungan: **Dari (Sumber)** & **Ke (Tujuan)**, masing-masing berisi optgroup Kategori + Kontak
 - Tombol "+ Kategori" & "+ Kontak" langsung dari tiap dropdown
-- Tabel daftar pengeluaran dengan kolom Dari & Ke (kategori/kontak)
+- Tabel daftar pengeluaran dengan kolom **Dari → Ke** (kategori/kontak)
 - Filter berdasarkan bulan
 - Edit & hapus data
 
@@ -280,13 +280,13 @@ Aplikasi akan bisa diakses di:
 ### Mencatat Pemasukan
 1. Buka halaman Pemasukan
 2. Klik "Tambah Pemasukan"
-3. Isi: tanggal, pilih **Dari (Sumber)** dan **Ke (Tujuan)** (masing-masing kategori atau kontak), nominal, catatan
+3. Isi: tanggal, nominal (wajib), lalu **Dari (Sumber)** dan **Ke (Tujuan)** (opsional, masing-masing kategori atau kontak), catatan
 4. Klik "Simpan"
 
 ### Mencatat Pengeluaran
 1. Buka halaman Pengeluaran
 2. Klik "Tambah Pengeluaran"
-3. Isi: tanggal, pilih **Dari (Sumber)** dan **Ke (Tujuan)** (masing-masing kategori atau kontak), nominal, catatan
+3. Isi: tanggal, nominal (wajib), lalu **Dari (Sumber)** dan **Ke (Tujuan)** (opsional, masing-masing kategori atau kontak), catatan
 4. Klik "Simpan"
 
 ### Kelola Kontak
