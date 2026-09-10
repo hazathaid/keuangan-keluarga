@@ -281,10 +281,15 @@
         btn.textContent = 'Mendaftar...';
         errorEl.style.display = 'none';
 
+        const redirectTo = new URL('login.html', window.location.href).href;
+
         const { data, error } = await supabaseClient.auth.signUp({
           email,
           password,
-          options: { data: { full_name: name } }
+          options: {
+            data: { full_name: name },
+            emailRedirectTo: redirectTo
+          }
         });
 
         if (error) {
